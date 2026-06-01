@@ -14,6 +14,11 @@ import { SnakeGame } from '../templates/SnakeGame';
 import { BreakoutGame } from '../templates/BreakoutGame';
 import { WhackAMoleGame } from '../templates/WhackAMoleGame';
 import { CatchCoinsGame } from '../templates/CatchCoinsGame';
+import { TicTacToeGame } from '../templates/TicTacToeGame';
+import { PianoTilesGame } from '../templates/PianoTilesGame';
+import { MazeGame } from '../templates/MazeGame';
+import { ReflexGame } from '../templates/ReflexGame';
+import { SimonSaysGame } from '../templates/SimonSaysGame';
 
 /**
  * Factory for creating game template instances.
@@ -97,5 +102,10 @@ export class TemplateFactory {
     this.templatesByName.set('Breakout', new BreakoutGame());
     this.templatesByName.set('WhackAMole', new WhackAMoleGame());
     this.templatesByName.set('CatchCoins', new CatchCoinsGame());
+    this.templatesByName.set('TicTacToe', new TicTacToeGame());
+    this.templatesByName.set('PianoTiles', new PianoTilesGame());
+    this.templatesByName.set('Maze', new MazeGame());
+    this.templatesByName.set('Reflex', new ReflexGame());
+    this.templatesByName.set('SimonSays', new SimonSaysGame());
   }
 }
