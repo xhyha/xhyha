@@ -19,6 +19,11 @@ import { PianoTilesGame } from '../templates/PianoTilesGame';
 import { MazeGame } from '../templates/MazeGame';
 import { ReflexGame } from '../templates/ReflexGame';
 import { SimonSaysGame } from '../templates/SimonSaysGame';
+import { DotsAndBoxesGame } from '../templates/DotsAndBoxesGame';
+import { TileSlideGame } from '../templates/TileSlideGame';
+import { ReactionDualGame } from '../templates/ReactionDualGame';
+import { PatternMemoryGame } from '../templates/PatternMemoryGame';
+import { BalloonPopGame } from '../templates/BalloonPopGame';
 
 /**
  * Factory for creating game template instances.
@@ -107,5 +112,10 @@ export class TemplateFactory {
     this.templatesByName.set('Maze', new MazeGame());
     this.templatesByName.set('Reflex', new ReflexGame());
     this.templatesByName.set('SimonSays', new SimonSaysGame());
+    this.templatesByName.set('DotsAndBoxes', new DotsAndBoxesGame());
+    this.templatesByName.set('TileSlide', new TileSlideGame());
+    this.templatesByName.set('ReactionDual', new ReactionDualGame());
+    this.templatesByName.set('PatternMemory', new PatternMemoryGame());
+    this.templatesByName.set('BalloonPop', new BalloonPopGame());
   }
 }
