@@ -168,6 +168,7 @@ describe('GenesisService', () => {
       const game = service.checkForMicroGame({
         hour: 7,
         lastGameTime: 1000, // only ~16 minutes since last game
+        isWeekend: true,    // avoid commute companion overlap at hour 7
       });
 
       expect(game).toBeNull();

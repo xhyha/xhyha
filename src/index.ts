@@ -19,3 +19,4 @@ export { EliminationGame } from './templates/EliminationGame';
 export { RhythmTapGame } from './templates/RhythmTapGame';
 export { MemoryFlipGame } from './templates/MemoryFlipGame';
 export { BreathingGame } from './templates/BreathingGame';
+export { DrawingGame } from './templates/DrawingGame';

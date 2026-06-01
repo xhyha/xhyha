@@ -3,6 +3,7 @@ import { EliminationGame } from '../templates/EliminationGame';
 import { RhythmTapGame } from '../templates/RhythmTapGame';
 import { MemoryFlipGame } from '../templates/MemoryFlipGame';
 import { BreathingGame } from '../templates/BreathingGame';
+import { DrawingGame } from '../templates/DrawingGame';
 
 /**
  * Factory for creating game template instances.
@@ -50,6 +51,8 @@ export class TemplateFactory {
     this.register(GameType.PUZZLE, new EliminationGame());
     this.register(GameType.REACTION, new RhythmTapGame());
     this.register(GameType.HEALING, new BreathingGame());
+
+    this.register(GameType.CREATE, new DrawingGame());
 
     // Memory game also maps to PUZZLE type but can be selected by name
     const memoryGame = new MemoryFlipGame();
