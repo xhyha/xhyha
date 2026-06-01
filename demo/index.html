@@ -3,14 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>Genesis — Micro-Game Engine</title>
+<title>Genesis — Micro-Game Engine + AI Lab</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#1A1A2E;--bg2:#16213E;--accent:#CF0A2C;--gold:#FFD700;--text:#E0E0E0;--card:#0F3460;--dim:#8A8A9A}
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;overflow:hidden;height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center}
+
+/* ===== MENU SCREEN ===== */
 #menu-screen{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:20px}
 #menu-screen h1{font-size:clamp(28px,5vw,42px);letter-spacing:12px;color:var(--gold);margin:16px 0 4px;text-transform:uppercase;font-weight:900}
-#menu-screen .subtitle{color:var(--dim);font-size:13px;letter-spacing:4px;margin-bottom:24px}
+#menu-screen .subtitle{color:var(--dim);font-size:13px;letter-spacing:4px;margin-bottom:20px}
+
+/* AI Lab Banner Button */
+.ai-lab-banner{width:100%;max-width:900px;margin-bottom:20px;padding:18px 24px;
+  background:linear-gradient(135deg,rgba(207,10,44,0.15),rgba(255,215,0,0.08));
+  border:1.5px solid rgba(207,10,44,0.4);border-radius:16px;cursor:pointer;
+  display:flex;align-items:center;gap:16px;transition:all .3s;position:relative;overflow:hidden}
+.ai-lab-banner::before{content:'';position:absolute;inset:-2px;border-radius:18px;
+  background:conic-gradient(from 0deg,transparent,rgba(207,10,44,0.3),transparent,rgba(255,215,0,0.2),transparent);
+  animation:ai-glow-rotate 4s linear infinite;opacity:0;transition:opacity .3s}
+.ai-lab-banner:hover::before{opacity:1}
+.ai-lab-banner:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(207,10,44,0.3);border-color:var(--accent)}
+@keyframes ai-glow-rotate{to{transform:rotate(360deg)}}
+.ai-lab-icon{font-size:32px;min-width:48px;height:48px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--accent),#e0103a);border-radius:12px;color:#fff;font-weight:900;letter-spacing:1px}
+.ai-lab-banner-text h2{font-size:18px;color:var(--gold);margin-bottom:3px}
+.ai-lab-banner-text p{font-size:12px;color:var(--dim);line-height:1.4}
+.ai-lab-badge{margin-left:auto;padding:4px 12px;background:var(--accent);color:#fff;font-size:10px;
+  border-radius:20px;letter-spacing:1px;font-weight:700;animation:ai-pulse 2s ease-in-out infinite}
+@keyframes ai-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.05)}}
+
 #game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;width:100%;max-width:900px;padding:0 10px}
 .game-card{background:linear-gradient(135deg,var(--card),#1a2a50);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
 .game-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 8px 30px rgba(207,10,44,.25)}
@@ -19,6 +41,8 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-ap
 .game-card h2{font-size:17px;color:var(--gold);margin-bottom:6px}
 .game-card p{font-size:12px;color:var(--dim);line-height:1.5}
 .game-card .tag{display:inline-block;margin-top:10px;font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(207,10,44,.2);color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+
+/* ===== GAME SCREEN ===== */
 #game-screen{width:100%;height:100%;display:none;flex-direction:column;align-items:center}
 #game-hud{width:100%;max-width:500px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;gap:8px}
 #back-btn{background:none;border:1px solid rgba(255,255,255,.15);color:var(--text);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;transition:all .2s;white-space:nowrap}
@@ -33,7 +57,148 @@ canvas{display:block;border-radius:12px;touch-action:none}
 #overlay p{color:var(--dim);margin-bottom:20px;font-size:14px}
 #overlay button{background:var(--accent);color:#fff;border:none;padding:12px 32px;border-radius:10px;font-size:15px;cursor:pointer;font-weight:700;letter-spacing:1px;transition:all .2s}
 #overlay button:hover{background:#e0103a;transform:scale(1.04)}
-@media(max-width:600px){#game-grid{grid-template-columns:1fr}#game-hud{padding:8px 10px}#game-title{font-size:12px;letter-spacing:1px}}
+
+/* ===== AI LAB SCREEN ===== */
+#ai-lab-screen{width:100%;height:100%;display:none;flex-direction:column;background:var(--bg)}
+#ai-lab-header{padding:14px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+#ai-back-btn{background:none;border:1px solid rgba(255,255,255,.15);color:var(--text);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;transition:all .2s}
+#ai-back-btn:hover{border-color:var(--accent);color:var(--accent)}
+#ai-lab-header h2{font-size:20px;color:var(--gold);letter-spacing:3px;font-weight:900}
+#ai-lab-header .ai-header-sub{color:var(--dim);font-size:11px;letter-spacing:2px;margin-left:4px}
+#ai-lab-tabs{display:flex;gap:4px;padding:10px 16px;overflow-x:auto;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.04)}
+.ai-tab{background:none;border:1px solid rgba(255,255,255,.08);color:var(--dim);padding:8px 16px;border-radius:8px;
+  cursor:pointer;font-size:12px;white-space:nowrap;transition:all .2s;letter-spacing:.5px}
+.ai-tab:hover{border-color:rgba(255,255,255,.2);color:var(--text)}
+.ai-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+#ai-lab-content{flex:1;overflow-y:auto;padding:16px;min-height:0}
+.ai-panel{display:none;width:100%;max-width:900px;margin:0 auto}
+.ai-panel.active{display:block}
+
+/* Profile Section */
+.profile-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:700px){.profile-layout{grid-template-columns:1fr}}
+.radar-wrap{background:linear-gradient(135deg,rgba(15,52,96,.4),rgba(22,33,62,.6));border:1px solid rgba(255,255,255,.06);
+  border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:center;position:relative}
+#radar-canvas{width:100%;max-width:380px;aspect-ratio:1}
+.profile-controls{display:flex;flex-direction:column;gap:12px}
+.slider-group{display:flex;flex-direction:column;gap:4px}
+.slider-group label{font-size:12px;color:var(--dim);display:flex;justify-content:space-between}
+.slider-group label span{color:var(--gold);font-weight:700}
+.slider-group input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;
+  background:linear-gradient(90deg,rgba(207,10,44,.3),rgba(255,215,0,.3));outline:none;cursor:pointer}
+.slider-group input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;
+  border-radius:50%;background:var(--accent);border:2px solid var(--gold);cursor:pointer;transition:transform .15s}
+.slider-group input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.slider-group input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
+  background:var(--accent);border:2px solid var(--gold);cursor:pointer}
+.profile-summary{background:linear-gradient(135deg,rgba(15,52,96,.5),rgba(22,33,62,.7));
+  border:1px solid rgba(255,215,0,.15);border-radius:12px;padding:16px;margin-top:8px}
+.profile-summary h3{color:var(--gold);font-size:14px;margin-bottom:8px}
+.profile-summary p{color:var(--dim);font-size:12px;line-height:1.6}
+.profile-summary .style-badge{display:inline-block;padding:4px 12px;border-radius:20px;
+  background:rgba(207,10,44,.2);color:var(--accent);font-size:11px;margin-top:6px;letter-spacing:1px}
+
+/* Recommend Section */
+.rec-list{display:flex;flex-direction:column;gap:16px}
+.rec-card{background:linear-gradient(135deg,rgba(15,52,96,.5),rgba(22,33,62,.7));
+  border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:20px;cursor:pointer;
+  transition:all .3s;position:relative;overflow:hidden}
+.rec-card:hover{transform:translateY(-2px);border-color:var(--gold);box-shadow:0 6px 24px rgba(255,215,0,.15)}
+.rec-card .rec-rank{position:absolute;top:14px;right:18px;font-size:36px;font-weight:900;color:rgba(255,215,0,.08)}
+.rec-card .rec-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.rec-card .rec-match{font-size:28px;font-weight:900;color:var(--gold);line-height:1}
+.rec-card .rec-match small{font-size:12px;color:var(--dim);font-weight:400}
+.rec-card .rec-info h3{font-size:16px;color:var(--text);margin-bottom:2px}
+.rec-card .rec-info .rec-tag{font-size:10px;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+.rec-card .rec-reason{font-size:12px;color:var(--dim);margin:8px 0;line-height:1.5}
+.rec-card .rec-reason strong{color:var(--gold)}
+.confidence-bar{width:100%;height:8px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:4px}
+.confidence-fill{height:100%;border-radius:4px;transition:width .6s ease;
+  background:linear-gradient(90deg,var(--accent),var(--gold))}
+.confidence-label{font-size:10px;color:var(--dim);margin-top:4px;display:flex;justify-content:space-between}
+.rec-play-hint{font-size:10px;color:var(--dim);text-align:center;margin-top:8px;letter-spacing:1px;opacity:.6}
+
+/* Difficulty Section */
+.diff-container{display:flex;flex-direction:column;gap:20px;max-width:600px;margin:0 auto}
+.diff-meter-wrap{background:linear-gradient(135deg,rgba(15,52,96,.4),rgba(22,33,62,.6));
+  border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:24px}
+.diff-meter{width:100%;height:32px;border-radius:16px;background:rgba(255,255,255,.06);position:relative;overflow:hidden}
+.diff-segment{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;letter-spacing:1px;transition:opacity .5s;color:rgba(255,255,255,.3)}
+.diff-segment.s1{left:0;width:25%;background:rgba(0,201,167,.15);border-radius:16px 0 0 16px}
+.diff-segment.s2{left:25%;width:25%;background:rgba(255,215,0,.1)}
+.diff-segment.s3{left:50%;width:25%;background:rgba(255,159,67,.1)}
+.diff-segment.s4{left:75%;width:25%;background:rgba(207,10,44,.15);border-radius:0 16px 16px 0}
+.diff-indicator{position:absolute;top:-4px;width:12px;height:40px;border-radius:6px;
+  background:var(--gold);box-shadow:0 0 16px rgba(255,215,0,.5);transition:left .8s cubic-bezier(.4,0,.2,1);z-index:2}
+.diff-label{text-align:center;margin-top:14px;font-size:18px;font-weight:700;letter-spacing:2px;
+  transition:color .3s}
+.diff-sim{background:linear-gradient(135deg,rgba(15,52,96,.4),rgba(22,33,62,.6));
+  border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:20px;text-align:center}
+.diff-sim h3{color:var(--gold);font-size:14px;margin-bottom:12px;letter-spacing:1px}
+.diff-btn{background:var(--accent);color:#fff;border:none;padding:10px 28px;border-radius:10px;
+  cursor:pointer;font-size:14px;font-weight:700;letter-spacing:1px;transition:all .2s;margin-top:8px}
+.diff-btn:hover{background:#e0103a;transform:scale(1.04)}
+.diff-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.diff-round-info{margin-top:16px;font-size:13px;color:var(--dim);line-height:1.8}
+.diff-round-info span{color:var(--gold);font-weight:700}
+.diff-bar-chart{display:flex;align-items:flex-end;gap:4px;height:80px;margin:12px auto 0;max-width:400px;justify-content:center}
+.diff-bar{flex:1;max-width:30px;border-radius:4px 4px 0 0;transition:height .5s;background:var(--accent);min-height:2px}
+
+/* Triggers Section */
+.trigger-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:600px){.trigger-grid{grid-template-columns:repeat(2,1fr)}}
+.trigger-card{background:linear-gradient(135deg,rgba(15,52,96,.4),rgba(22,33,62,.6));
+  border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px;transition:all .3s;cursor:pointer}
+.trigger-card:hover{border-color:rgba(255,255,255,.15)}
+.trigger-card.activated{border-color:var(--gold);box-shadow:0 0 20px rgba(255,215,0,.2);animation:trigger-glow 1.5s ease-in-out}
+@keyframes trigger-glow{0%{box-shadow:0 0 20px rgba(255,215,0,.4)}50%{box-shadow:0 0 40px rgba(255,215,0,.6)}100%{box-shadow:0 0 20px rgba(255,215,0,.2)}}
+.trigger-card .trigger-icon{font-size:24px;margin-bottom:6px}
+.trigger-card .trigger-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
+.trigger-card .trigger-desc{font-size:10px;color:var(--dim);line-height:1.4;margin-bottom:8px}
+.trigger-card .trigger-ctx{display:flex;flex-direction:column;gap:6px}
+.trigger-card .trigger-ctx label{font-size:10px;color:var(--dim)}
+.trigger-card .trigger-ctx select,.trigger-card .trigger-ctx input[type=range]{
+  width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  color:var(--text);border-radius:6px;padding:4px;font-size:11px}
+.trigger-card .trigger-ctx input[type=range]{padding:0;height:5px;-webkit-appearance:none;border:none;
+  background:linear-gradient(90deg,rgba(207,10,44,.3),rgba(255,215,0,.3))}
+.trigger-card .trigger-ctx input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--accent);border:2px solid var(--gold);cursor:pointer}
+.trigger-card .trigger-status{margin-top:8px;font-size:10px;padding:4px 8px;border-radius:6px;text-align:center;
+  transition:all .3s}
+.trigger-card .trigger-status.off{background:rgba(255,255,255,.04);color:var(--dim)}
+.trigger-card .trigger-status.on{background:rgba(255,215,0,.15);color:var(--gold);font-weight:700}
+.trigger-card .trigger-rec{font-size:10px;color:var(--accent);margin-top:6px;min-height:14px}
+.trigger-priority{margin-top:20px;background:linear-gradient(135deg,rgba(15,52,96,.4),rgba(22,33,62,.6));
+  border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px}
+.trigger-priority h3{color:var(--gold);font-size:13px;margin-bottom:10px;letter-spacing:1px}
+.priority-list{display:flex;flex-direction:column;gap:4px}
+.priority-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;font-size:12px}
+.priority-item .p-num{font-weight:900;color:var(--gold);min-width:20px}
+.priority-item .p-name{color:var(--text)}
+.priority-item .p-bar{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.06)}
+.priority-item .p-bar-fill{height:100%;border-radius:2px;background:var(--accent);transition:width .5s}
+
+/* Learning Section */
+.learn-container{display:flex;flex-direction:column;gap:16px;max-width:700px;margin:0 auto}
+.learn-chart-wrap{background:linear-gradient(135deg,rgba(15,52,96,.4),rgba(22,33,62,.6));
+  border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:16px}
+#learn-canvas{width:100%;height:280px;display:block;border-radius:8px}
+.learn-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.learn-legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.learn-legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--dim)}
+.learn-legend-dot{width:10px;height:10px;border-radius:50%}
+.learn-progress{font-size:12px;color:var(--dim);margin-left:auto}
+.learn-progress span{color:var(--gold);font-weight:700}
+
+@media(max-width:600px){
+  #game-grid{grid-template-columns:1fr}
+  #game-hud{padding:8px 10px}
+  #game-title{font-size:12px;letter-spacing:1px}
+  .profile-layout{grid-template-columns:1fr}
+  .trigger-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -41,6 +206,14 @@ canvas{display:block;border-radius:12px;touch-action:none}
 <div id="menu-screen">
   <h1>Genesis</h1>
   <div class="subtitle">MICRO-GAME ENGINE</div>
+  <div class="ai-lab-banner" onclick="openAILab()">
+    <div class="ai-lab-icon">AI</div>
+    <div class="ai-lab-banner-text">
+      <h2>AI Lab</h2>
+      <p>智能个性化引擎 — 用户画像 / 智能推荐 / 动态难度 / 触发器模拟 / 学习曲线</p>
+    </div>
+    <div class="ai-lab-badge">NEW</div>
+  </div>
   <div id="game-grid"></div>
 </div>
 
@@ -57,6 +230,102 @@ canvas{display:block;border-radius:12px;touch-action:none}
       <h2 id="ov-title"></h2>
       <p id="ov-msg"></p>
       <button id="ov-btn"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== AI LAB SCREEN ===== -->
+<div id="ai-lab-screen">
+  <div id="ai-lab-header">
+    <button id="ai-back-btn" onclick="closeAILab()">&larr; Menu</button>
+    <h2>AI Lab</h2>
+    <span class="ai-header-sub">智能个性化引擎</span>
+  </div>
+  <div id="ai-lab-tabs">
+    <button class="ai-tab active" data-tab="profile" onclick="switchAITab('profile')">用户画像</button>
+    <button class="ai-tab" data-tab="recommend" onclick="switchAITab('recommend')">智能推荐</button>
+    <button class="ai-tab" data-tab="difficulty" onclick="switchAITab('difficulty')">动态难度</button>
+    <button class="ai-tab" data-tab="triggers" onclick="switchAITab('triggers')">触发器</button>
+    <button class="ai-tab" data-tab="learning" onclick="switchAITab('learning')">学习曲线</button>
+  </div>
+  <div id="ai-lab-content">
+    <!-- TAB: User Profile -->
+    <div id="tab-profile" class="ai-panel active">
+      <div class="profile-layout">
+        <div class="radar-wrap">
+          <canvas id="radar-canvas"></canvas>
+        </div>
+        <div class="profile-controls">
+          <div class="slider-group"><label>Strategy 策略 <span id="v-strategy">65</span></label><input type="range" min="0" max="100" value="65" data-dim="strategy"></div>
+          <div class="slider-group"><label>Action 行动 <span id="v-action">80</span></label><input type="range" min="0" max="100" value="80" data-dim="action"></div>
+          <div class="slider-group"><label>Social 社交 <span id="v-social">45</span></label><input type="range" min="0" max="100" value="45" data-dim="social"></div>
+          <div class="slider-group"><label>Creative 创意 <span id="v-creative">70</span></label><input type="range" min="0" max="100" value="70" data-dim="creative"></div>
+          <div class="slider-group"><label>Relaxation 放松 <span id="v-relaxation">55</span></label><input type="range" min="0" max="100" value="55" data-dim="relaxation"></div>
+          <div class="slider-group"><label>Competition 竞争 <span id="v-competition">75</span></label><input type="range" min="0" max="100" value="75" data-dim="competition"></div>
+          <div class="profile-summary" id="profile-summary">
+            <h3>Player Profile</h3>
+            <p id="profile-text">Analyzing...</p>
+            <div class="style-badge" id="profile-badge">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Smart Recommendation -->
+    <div id="tab-recommend" class="ai-panel">
+      <div class="rec-list" id="rec-list"></div>
+      <div class="rec-play-hint">Click a recommendation to play the game</div>
+    </div>
+
+    <!-- TAB: Dynamic Difficulty -->
+    <div id="tab-difficulty" class="ai-panel">
+      <div class="diff-container">
+        <div class="diff-meter-wrap">
+          <div class="diff-meter">
+            <div class="diff-segment s1">EASY</div>
+            <div class="diff-segment s2">NORMAL</div>
+            <div class="diff-segment s3">HARD</div>
+            <div class="diff-segment s4">EXPERT</div>
+            <div class="diff-indicator" id="diff-indicator" style="left:12.5%"></div>
+          </div>
+          <div class="diff-label" id="diff-label" style="color:#00C9A7">EASY</div>
+        </div>
+        <div class="diff-sim">
+          <h3>Difficulty Adaptation Simulation</h3>
+          <p style="font-size:12px;color:var(--dim);margin-bottom:12px">Watch the AI adapt difficulty based on simulated player performance</p>
+          <button class="diff-btn" id="diff-start-btn" onclick="startDiffSimulation()">Start Simulation</button>
+          <div class="diff-round-info" id="diff-round-info" style="display:none">
+            Round: <span id="diff-round">0</span>/10 &nbsp;|&nbsp;
+            Score: <span id="diff-score">0</span> &nbsp;|&nbsp;
+            Performance: <span id="diff-perf">-</span>
+          </div>
+          <div class="diff-bar-chart" id="diff-bars"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Trigger Scenarios -->
+    <div id="tab-triggers" class="ai-panel">
+      <div class="trigger-grid" id="trigger-grid"></div>
+      <div class="trigger-priority">
+        <h3>Trigger Priority Queue</h3>
+        <div class="priority-list" id="priority-list"></div>
+      </div>
+    </div>
+
+    <!-- TAB: Learning Curve -->
+    <div id="tab-learning" class="ai-panel">
+      <div class="learn-container">
+        <div class="learn-chart-wrap">
+          <canvas id="learn-canvas"></canvas>
+        </div>
+        <div class="learn-controls">
+          <button class="diff-btn" id="learn-btn" onclick="startLearningSim()">Simulate 20 Games</button>
+          <button class="diff-btn" id="learn-reset-btn" onclick="resetLearning()" style="background:var(--card);border:1px solid rgba(255,255,255,.15)">Reset</button>
+          <div class="learn-progress">Games: <span id="learn-count">0</span>/20</div>
+        </div>
+        <div class="learn-legend" id="learn-legend"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -107,6 +376,7 @@ window.addEventListener('resize', () => { if (currentGame) resize(); });
 
 function launchGame(idx) {
   $('menu-screen').style.display = 'none';
+  $('ai-lab-screen').style.display = 'none';
   $('game-screen').style.display = 'flex';
   $('game-title').textContent = GAMES[idx].name.toUpperCase();
   score = 0; timeLeft = 30;
@@ -455,24 +725,19 @@ gameImpl.breathing = function() {
       tapping = false;
     }
     clearCanvas();
-    /* Scale */
     let scale;
     if (phaseIdx === 0) scale = t;
     else if (phaseIdx === 1) scale = 1;
     else if (phaseIdx === 2) scale = 1 - t;
     else scale = 0;
     const r = baseR * 0.4 + baseR * scale;
-    /* Glow */
     const grad = ctx.createRadialGradient(W/2, H/2, r * 0.2, W/2, H/2, r * 1.6);
     grad.addColorStop(0, `rgba(0,201,167,${0.15 + scale * 0.2})`);
     grad.addColorStop(1, 'rgba(0,201,167,0)');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
-    /* Circle */
     drawCircle(W/2, H/2, r, `rgba(0,201,167,${0.2 + scale * 0.5})`, '#00C9A7');
     drawCircle(W/2, H/2, r * 0.5, `rgba(0,201,167,${0.3 + scale * 0.4})`);
-    /* Text */
     drawText(phases[phaseIdx].name.toUpperCase(), W/2, H/2 - r - 40, 28, GOLD);
-    /* Progress bar */
     const bw = W * 0.6, bh = 6, bx = (W - bw)/2, by = H/2 + r + 50;
     drawRoundRect(bx, by, bw, bh, 3, 'rgba(255,255,255,0.1)');
     drawRoundRect(bx, by, bw * t, bh, 3, '#00C9A7');
@@ -514,7 +779,6 @@ gameImpl.drawing = function() {
   function draw() {
     clearCanvas();
     drawText(`Dot ${currentDot + 1} of ${COUNT}`, W/2, 22, 15, DIM);
-    /* Lines */
     ctx.strokeStyle = GOLD; ctx.lineWidth = 3; ctx.lineCap = 'round';
     ctx.beginPath();
     for (let i = 0; i < lines.length; i++) {
@@ -522,7 +786,6 @@ gameImpl.drawing = function() {
       i === 0 ? ctx.moveTo(d.x, d.y) : ctx.lineTo(d.x, d.y);
     }
     if (lines.length > 0) ctx.stroke();
-    /* Dots */
     dots.forEach((d, i) => {
       const done = i < currentDot;
       const next = i === currentDot;
@@ -565,7 +828,7 @@ gameImpl.colormatch = function() {
       if (pos.x >= x && pos.x <= x + btnW && pos.y >= y && pos.y <= y + btnH) {
         const chosen = options[i];
         if (chosen === displayColor) { addScore(15); resultMsg = 'Correct!'; }
-        else { resultScore = -5; addScore(-5); resultMsg = 'Wrong!'; }
+        else { addScore(-5); resultMsg = 'Wrong!'; }
         resultTime = performance.now();
         setTimeout(newRound, 600);
         return;
@@ -575,14 +838,11 @@ gameImpl.colormatch = function() {
   function draw(now) {
     clearCanvas();
     drawText('What COLOR is displayed?', W/2, 30, 14, DIM);
-    /* The word */
     ctx.font = `bold ${Math.min(W * 0.15, 56)}px sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillStyle = COLS[displayWord];
     ctx.fillText(NAMES[displayWord], W/2, H * 0.25);
-    /* Hint */
     drawText('(Ignore the word meaning!)', W/2, H * 0.37, 11, 'rgba(255,255,255,0.2)');
-    /* Buttons */
     const btnW = W * 0.38, btnH = 52, gap = 16;
     const startX = (W - btnW * 2 - gap) / 2, startY = H * 0.55;
     for (let i = 0; i < 4; i++) {
@@ -704,7 +964,6 @@ gameImpl.bubblepop = function() {
         b.wobble += dt * 3;
         b.x += Math.sin(b.wobble) * 0.8;
         drawCircle(b.x, b.y, b.r, b.color + '44', b.color);
-        /* shine */
         drawCircle(b.x - b.r * 0.25, b.y - b.r * 0.25, b.r * 0.2, 'rgba(255,255,255,0.3)');
       }
     });
@@ -737,7 +996,6 @@ gameImpl.wordscramble = function() {
     const totalW = shuffled.length * (tileW + gap) - gap;
     const sx = (W - totalW) / 2;
     const sy = H * 0.35;
-    /* Check letter tiles */
     for (let i = 0; i < shuffled.length; i++) {
       const x = sx + i * (tileW + gap);
       if (selected.includes(i)) continue;
@@ -751,7 +1009,6 @@ gameImpl.wordscramble = function() {
         return;
       }
     }
-    /* Check undo area (selected tiles) */
     const uy = H * 0.55;
     for (let i = 0; i < selected.length; i++) {
       const x = sx + i * (tileW + gap);
@@ -763,7 +1020,6 @@ gameImpl.wordscramble = function() {
   function draw() {
     clearCanvas();
     drawText('Unscramble the word!', W/2, 30, 15, DIM);
-    /* Hint */
     const hint = word[0] + '_'.repeat(word.length - 2) + word[word.length - 1];
     drawText(`Hint: ${hint}`, W/2, H * 0.15, 14, 'rgba(255,255,255,0.25)');
     const tileW = Math.min(50, (W - 40) / shuffled.length - 6);
@@ -771,7 +1027,6 @@ gameImpl.wordscramble = function() {
     const gap = 6;
     const totalW = shuffled.length * (tileW + gap) - gap;
     const sx = (W - totalW) / 2;
-    /* Source tiles */
     const sy = H * 0.35;
     for (let i = 0; i < shuffled.length; i++) {
       const x = sx + i * (tileW + gap);
@@ -779,7 +1034,6 @@ gameImpl.wordscramble = function() {
       drawRoundRect(x, sy, tileW, tileH, 8, used ? 'rgba(255,255,255,0.03)' : BG2, used ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.15)');
       if (!used) drawText(shuffled[i], x + tileW/2, sy + tileH/2, tileW * 0.5, '#fff');
     }
-    /* Selected tiles */
     const uy = H * 0.55;
     drawRoundRect(sx - 4, uy - 4, totalW + 8, tileH + 8, 10, 'rgba(207,10,44,0.08)', 'rgba(207,10,44,0.25)');
     for (let i = 0; i < selected.length; i++) {
@@ -837,10 +1091,9 @@ gameImpl.chaselight = function() {
       } else if (isTarget) {
         const pulse = 0.7 + Math.sin(now * 0.008) * 0.3;
         drawRoundRect(x, y, cellW, cellH, 10, `rgba(207,10,44,${pulse * 0.5})`, ACCENT);
-        /* Timer ring */
-        const cx = x + cellW/2, cy = y + cellH/2, rr = Math.min(cellW, cellH) * 0.35;
+        const cx2 = x + cellW/2, cy2 = y + cellH/2, rr = Math.min(cellW, cellH) * 0.35;
         ctx.beginPath();
-        ctx.arc(cx, cy, rr, -Math.PI/2, -Math.PI/2 + (1 - elapsed/timeLimit) * Math.PI * 2);
+        ctx.arc(cx2, cy2, rr, -Math.PI/2, -Math.PI/2 + (1 - elapsed/timeLimit) * Math.PI * 2);
         ctx.strokeStyle = GOLD; ctx.lineWidth = 3; ctx.stroke();
       } else {
         drawRoundRect(x, y, cellW, cellH, 10, 'rgba(255,255,255,0.03)', 'rgba(255,255,255,0.06)');
@@ -850,6 +1103,703 @@ gameImpl.chaselight = function() {
   }
   animId = requestAnimationFrame(draw);
 };
+
+
+/* ===================================================================
+   AI LAB — INTELLIGENT PERSONALIZATION ENGINE
+   =================================================================== */
+
+/* ---- AI Lab Navigation ---- */
+function openAILab() {
+  $('menu-screen').style.display = 'none';
+  $('ai-lab-screen').style.display = 'flex';
+  initAILab();
+}
+function closeAILab() {
+  $('ai-lab-screen').style.display = 'none';
+  $('menu-screen').style.display = 'flex';
+}
+function switchAITab(tab) {
+  document.querySelectorAll('.ai-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.ai-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+  if (tab === 'recommend') updateRecommendations();
+  if (tab === 'profile') drawRadarChart();
+}
+
+/* ---- Taste Profile State ---- */
+const DIMS = ['strategy','action','social','creative','relaxation','competition'];
+const DIM_LABELS = ['Strategy','Action','Social','Creative','Relaxation','Competition'];
+const DIM_COLORS = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#9B59B6','#FF9F43'];
+let tasteProfile = { strategy:65, action:80, social:45, creative:70, relaxation:55, competition:75 };
+
+/* Game-to-dimension mapping for recommendation engine */
+const GAME_DIMS = [
+  { weights:{relaxation:.6,creative:.4,strategy:.2} },  // Elimination
+  { weights:{action:.5,creative:.3,social:.2} },         // RhythmTap
+  { weights:{strategy:.4,relaxation:.3,social:.3} },     // MemoryFlip
+  { weights:{relaxation:.8,creative:.2} },               // Breathing
+  { weights:{creative:.6,relaxation:.2,strategy:.2} },   // Drawing
+  { weights:{action:.4,competition:.3,strategy:.3} },    // ColorMatch
+  { weights:{strategy:.5,competition:.3,action:.2} },    // QuickMath
+  { weights:{action:.5,relaxaxtion:.3,competition:.2} }, // BubblePop
+  { weights:{strategy:.4,creative:.3,competition:.3} },  // WordScramble
+  { weights:{action:.6,competition:.3,social:.1} },      // ChaseLight
+];
+
+/* ---- Initialize AI Lab ---- */
+let aiLabInited = false;
+function initAILab() {
+  if (aiLabInited) { drawRadarChart(); return; }
+  aiLabInited = true;
+
+  // Setup profile sliders
+  document.querySelectorAll('#tab-profile input[type=range]').forEach(slider => {
+    slider.addEventListener('input', () => {
+      const dim = slider.dataset.dim;
+      tasteProfile[dim] = parseInt(slider.value);
+      $('v-' + dim).textContent = slider.value;
+      drawRadarChart();
+      updateProfileSummary();
+    });
+  });
+
+  initRadarCanvas();
+  drawRadarChart();
+  updateProfileSummary();
+  initTriggers();
+  initDiffBars();
+  initLearningChart();
+  initLearningLegend();
+  updateRecommendations();
+}
+
+/* =========================================================
+   1. USER PROFILE VISUALIZATION — Radar Chart
+   ========================================================= */
+let radarCanvas, radarCtx, radarW, radarH;
+
+function initRadarCanvas() {
+  radarCanvas = $('radar-canvas');
+  radarCtx = radarCanvas.getContext('2d');
+  resizeRadar();
+  window.addEventListener('resize', resizeRadar);
+}
+
+function resizeRadar() {
+  if (!radarCanvas) return;
+  const wrap = radarCanvas.parentElement;
+  const size = Math.min(wrap.clientWidth - 32, 380);
+  const ratio = window.devicePixelRatio || 1;
+  radarW = size; radarH = size;
+  radarCanvas.style.width = size + 'px';
+  radarCanvas.style.height = size + 'px';
+  radarCanvas.width = size * ratio;
+  radarCanvas.height = size * ratio;
+  radarCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  drawRadarChart();
+}
+
+function drawRadarChart() {
+  if (!radarCtx) return;
+  const c = radarCtx, w = radarW, h = radarH;
+  const cx = w / 2, cy = h / 2;
+  const maxR = Math.min(w, h) * 0.32;
+  const n = 6;
+
+  c.clearRect(0, 0, w, h);
+
+  // Background glow
+  const bgGrad = c.createRadialGradient(cx, cy, 0, cx, cy, maxR * 1.4);
+  bgGrad.addColorStop(0, 'rgba(207,10,44,0.06)');
+  bgGrad.addColorStop(1, 'rgba(207,10,44,0)');
+  c.fillStyle = bgGrad;
+  c.fillRect(0, 0, w, h);
+
+  // Grid levels
+  for (let level = 1; level <= 4; level++) {
+    const lr = maxR * level / 4;
+    c.beginPath();
+    for (let i = 0; i <= n; i++) {
+      const angle = (i % n) * Math.PI * 2 / n - Math.PI / 2;
+      const x = cx + Math.cos(angle) * lr;
+      const y = cy + Math.sin(angle) * lr;
+      i === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
+    }
+    c.closePath();
+    c.strokeStyle = `rgba(255,255,255,${level === 4 ? 0.12 : 0.06})`;
+    c.lineWidth = 1;
+    c.stroke();
+    if (level === 4) {
+      c.fillStyle = 'rgba(15,52,96,0.15)';
+      c.fill();
+    }
+  }
+
+  // Axes
+  for (let i = 0; i < n; i++) {
+    const angle = i * Math.PI * 2 / n - Math.PI / 2;
+    c.beginPath();
+    c.moveTo(cx, cy);
+    c.lineTo(cx + Math.cos(angle) * maxR, cy + Math.sin(angle) * maxR);
+    c.strokeStyle = 'rgba(255,255,255,0.08)';
+    c.lineWidth = 1;
+    c.stroke();
+  }
+
+  // Data polygon with gradient fill
+  c.beginPath();
+  const values = DIMS.map(d => tasteProfile[d] / 100);
+  for (let i = 0; i <= n; i++) {
+    const angle = (i % n) * Math.PI * 2 / n - Math.PI / 2;
+    const v = values[i % n];
+    const x = cx + Math.cos(angle) * maxR * v;
+    const y = cy + Math.sin(angle) * maxR * v;
+    i === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
+  }
+  c.closePath();
+
+  // Gradient fill
+  const fillGrad = c.createRadialGradient(cx, cy, 0, cx, cy, maxR);
+  fillGrad.addColorStop(0, 'rgba(207,10,44,0.15)');
+  fillGrad.addColorStop(1, 'rgba(207,10,44,0.45)');
+  c.fillStyle = fillGrad;
+  c.fill();
+  c.strokeStyle = '#CF0A2C';
+  c.lineWidth = 2.5;
+  c.stroke();
+
+  // Data points and labels
+  for (let i = 0; i < n; i++) {
+    const angle = i * Math.PI * 2 / n - Math.PI / 2;
+    const v = values[i];
+    const px = cx + Math.cos(angle) * maxR * v;
+    const py = cy + Math.sin(angle) * maxR * v;
+
+    // Glow
+    const ptGlow = c.createRadialGradient(px, py, 0, px, py, 12);
+    ptGlow.addColorStop(0, 'rgba(255,215,0,0.4)');
+    ptGlow.addColorStop(1, 'rgba(255,215,0,0)');
+    c.fillStyle = ptGlow;
+    c.fillRect(px - 12, py - 12, 24, 24);
+
+    // Point
+    c.beginPath();
+    c.arc(px, py, 5, 0, Math.PI * 2);
+    c.fillStyle = DIM_COLORS[i];
+    c.fill();
+    c.strokeStyle = '#FFD700';
+    c.lineWidth = 2;
+    c.stroke();
+
+    // Label
+    const labelR = maxR + 28;
+    const lx = cx + Math.cos(angle) * labelR;
+    const ly = cy + Math.sin(angle) * labelR;
+    c.fillStyle = '#E0E0E0';
+    c.font = 'bold 11px "Segoe UI",system-ui,sans-serif';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText(DIM_LABELS[i], lx, ly - 7);
+    c.fillStyle = '#FFD700';
+    c.font = 'bold 13px "Segoe UI",system-ui,sans-serif';
+    c.fillText(Math.round(values[i] * 100), lx, ly + 8);
+  }
+
+  // Center decoration
+  c.beginPath();
+  c.arc(cx, cy, 4, 0, Math.PI * 2);
+  c.fillStyle = 'rgba(255,215,0,0.5)';
+  c.fill();
+}
+
+function updateProfileSummary() {
+  const vals = DIMS.map(d => ({ name: d, v: tasteProfile[d] }));
+  vals.sort((a, b) => b.v - a.v);
+  const top = vals[0];
+  const styleMap = {
+    strategy: { label: 'Strategic Mastermind', desc: 'You excel at planning and analytical thinking. Puzzle and strategy games are your domain.' },
+    action: { label: 'Action Seeker', desc: 'You thrive on fast-paced excitement. Reflex and action games fuel your adrenaline.' },
+    social: { label: 'Social Butterfly', desc: 'Connection and community drive you. Multiplayer and cooperative experiences are ideal.' },
+    creative: { label: 'Creative Visionary', desc: 'You love expressing yourself and finding unique solutions. Artistic games resonate deeply.' },
+    relaxation: { label: 'Zen Explorer', desc: 'You prefer calm, meditative experiences. Relaxing and ambient games are your sanctuary.' },
+    competition: { label: 'Competitive Champion', desc: 'You live for the thrill of victory. Ranked and competitive modes are where you shine.' }
+  };
+  const style = styleMap[top.name];
+  $('profile-badge').textContent = style.label;
+  $('profile-text').textContent = style.desc + ` (Primary: ${Math.round(top.v)}%)`;
+
+  const avgDiff = Math.round((tasteProfile.competition + tasteProfile.action) / 2);
+  const prefDiff = avgDiff > 70 ? 'Hard' : avgDiff > 45 ? 'Normal' : 'Easy';
+  $('profile-text').textContent += ` | Preferred Difficulty: ${prefDiff}`;
+}
+
+/* =========================================================
+   2. SMART RECOMMENDATION ENGINE
+   ========================================================= */
+function calcMatchScore(gameIdx) {
+  const w = GAME_DIMS[gameIdx].weights;
+  let score = 0, totalWeight = 0;
+  for (const [dim, weight] of Object.entries(w)) {
+    score += tasteProfile[dim] * weight;
+    totalWeight += weight;
+  }
+  return totalWeight > 0 ? Math.round(score / totalWeight) : 0;
+}
+
+function getMatchReason(gameIdx, matchPct) {
+  const w = GAME_DIMS[gameIdx].weights;
+  const sorted = Object.entries(w).sort((a, b) => b[1] - a[1]);
+  const topDim = sorted[0][0];
+  const reasons = {
+    strategy: 'Your strategic thinking makes this a perfect fit',
+    action: 'Your love for action drives this recommendation',
+    social: 'Your social playstyle aligns with this game',
+    creative: 'Your creativity shines in this experience',
+    relaxation: 'Your need for relaxation matches perfectly',
+    competition: 'Your competitive spirit will love this challenge'
+  };
+  return `Based on your ${topDim.charAt(0).toUpperCase() + topDim.slice(1)} preference (${tasteProfile[topDim]}%), ${reasons[topDim]}`;
+}
+
+function updateRecommendations() {
+  const scores = GAMES.map((g, i) => ({ idx: i, score: calcMatchScore(i) }));
+  scores.sort((a, b) => b.score - a.score);
+  const top3 = scores.slice(0, 3);
+  const maxScore = top3[0].score;
+
+  const container = $('rec-list');
+  container.innerHTML = '';
+
+  top3.forEach((item, rank) => {
+    const g = GAMES[item.idx];
+    const confidence = Math.round(item.score / maxScore * 100);
+    const card = document.createElement('div');
+    card.className = 'rec-card';
+    card.innerHTML = `
+      <div class="rec-rank">#${rank + 1}</div>
+      <div class="rec-header">
+        <div class="rec-match">${item.score}%<small> match</small></div>
+        <div class="rec-info">
+          <h3>${g.name}</h3>
+          <div class="rec-tag">${g.tag}</div>
+        </div>
+      </div>
+      <div class="rec-reason"><strong>Why:</strong> ${getMatchReason(item.idx, item.score)}</div>
+      <div class="confidence-bar"><div class="confidence-fill" style="width:${confidence}%"></div></div>
+      <div class="confidence-label"><span>Confidence</span><span>${confidence}%</span></div>
+    `;
+    card.onclick = () => {
+      $('ai-lab-screen').style.display = 'none';
+      launchGame(item.idx);
+    };
+    container.appendChild(card);
+  });
+}
+
+/* =========================================================
+   3. DYNAMIC DIFFICULTY VISUALIZATION
+   ========================================================= */
+let diffSimRunning = false;
+const DIFF_LEVELS = [
+  { name: 'EASY', color: '#00C9A7', range: [0, 25] },
+  { name: 'NORMAL', color: '#FFD700', range: [25, 50] },
+  { name: 'HARD', color: '#FF9F43', range: [50, 75] },
+  { name: 'EXPERT', color: '#CF0A2C', range: [75, 100] }
+];
+
+function initDiffBars() {
+  const container = $('diff-bars');
+  container.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'diff-bar';
+    bar.style.height = '2px';
+    container.appendChild(bar);
+  }
+}
+
+function setDiffLevel(level) {
+  // level is 0-100
+  const pct = 12.5 + (level / 100) * 75; // maps to meter position
+  $('diff-indicator').style.left = pct + '%';
+
+  const dl = DIFF_LEVELS.find(d => level >= d.range[0] && level < d.range[1]) || DIFF_LEVELS[3];
+  $('diff-label').textContent = dl.name;
+  $('diff-label').style.color = dl.color;
+}
+
+function startDiffSimulation() {
+  if (diffSimRunning) return;
+  diffSimRunning = true;
+  $('diff-start-btn').disabled = true;
+  $('diff-round-info').style.display = 'block';
+
+  let round = 0, diffLevel = 12.5; // Start easy
+  const bars = $('diff-bars').children;
+
+  function simRound() {
+    if (round >= 10) {
+      diffSimRunning = false;
+      $('diff-start-btn').disabled = false;
+      $('diff-start-btn').textContent = 'Restart Simulation';
+      return;
+    }
+
+    // Simulate performance based on difficulty + randomness
+    const difficulty = diffLevel / 100;
+    const skill = 0.5 + Math.random() * 0.3; // player skill 0.5-0.8
+    const performance = skill + (Math.random() - 0.5) * 0.4;
+    const score = Math.round(performance * 1000);
+    const perfLabel = performance > 0.7 ? 'Excellent' : performance > 0.5 ? 'Good' : performance > 0.3 ? 'Average' : 'Poor';
+    const perfColor = performance > 0.7 ? '#00C9A7' : performance > 0.5 ? '#FFD700' : performance > 0.3 ? '#FF9F43' : '#CF0A2C';
+
+    // Adapt difficulty
+    if (performance > 0.65) diffLevel = Math.min(100, diffLevel + 10 + Math.random() * 8);
+    else if (performance < 0.4) diffLevel = Math.max(0, diffLevel - 10 - Math.random() * 8);
+    else diffLevel += (Math.random() - 0.5) * 6;
+
+    round++;
+    setDiffLevel(diffLevel);
+    $('diff-round').textContent = round;
+    $('diff-score').textContent = score;
+    $('diff-perf').textContent = perfLabel;
+    $('diff-perf').style.color = perfColor;
+
+    // Update bar chart
+    const barH = Math.max(4, (score / 1000) * 80);
+    bars[round - 1].style.height = barH + 'px';
+    bars[round - 1].style.background = perfColor;
+
+    setTimeout(simRound, 800);
+  }
+
+  // Reset
+  Array.from(bars).forEach(b => { b.style.height = '2px'; b.style.background = 'var(--accent)'; });
+  setDiffLevel(12.5);
+  simRound();
+}
+
+/* =========================================================
+   4. TRIGGER SCENARIO SIMULATOR
+   ========================================================= */
+const TRIGGERS = [
+  { id:'download', icon:'⏳', name:'下载等待', desc:'Detect long download waits and suggest quick games',
+    ctx:[{type:'range',label:'Download Progress',min:0,max:100,val:30,unit:'%'}],
+    check: ctx => ctx[0] < 50, priority:8, rec:3 },
+  { id:'lose', icon:'😤', name:'连败安慰', desc:'Comfort after losing streak with relaxing content',
+    ctx:[{type:'range',label:'Consecutive Losses',min:0,max:10,val:3,unit:'x'}],
+    check: ctx => ctx[0] >= 3, priority:9, rec:3 },
+  { id:'latenight', icon:'🌙', name:'深夜关怀', desc:'Late-night wellness check and gentle suggestions',
+    ctx:[{type:'range',label:'Time of Day',min:0,max:24,val:23,unit:':00'}],
+    check: ctx => ctx[0] >= 22 || ctx[0] < 3, priority:7, rec:3 },
+  { id:'morning', icon:'☀️', name:'早安问候', desc:'Morning greeting with daily challenge recommendation',
+    ctx:[{type:'range',label:'Time of Day',min:0,max:24,val:8,unit:':00'}],
+    check: ctx => ctx[0] >= 6 && ctx[0] < 10, priority:5, rec:6 },
+  { id:'commute', icon:'🚇', name:'通勤陪伴', desc:'Quick-play suggestions during commute hours',
+    ctx:[{type:'range',label:'Time of Day',min:0,max:24,val:8,unit:':00'}],
+    check: ctx => (ctx[0] >= 7 && ctx[0] < 9) || (ctx[0] >= 17 && ctx[0] < 19), priority:6, rec:9 },
+  { id:'bored', icon:'😑', name:'无聊检测', desc:'Detect inactivity and suggest engaging content',
+    ctx:[{type:'range',label:'Idle Minutes',min:0,max:60,val:15,unit:'min'}],
+    check: ctx => ctx[0] >= 10, priority:4, rec:1 },
+  { id:'uninstall', icon:'💔', name:'卸载挽回', desc:'Win-back campaign for at-risk users',
+    ctx:[{type:'range',label:'Days Inactive',min:0,max:30,val:7,unit:'days'}],
+    check: ctx => ctx[0] >= 5, priority:10, rec:3 },
+  { id:'rain', icon:'🌧️', name:'雨天治愈', desc:'Cozy game suggestions on rainy days',
+    ctx:[{type:'select',label:'Weather',options:['Sunny','Cloudy','Rainy','Stormy','Snowy'],val:'Rainy'}],
+    check: ctx => ctx[0] === 'Rainy' || ctx[0] === 'Stormy', priority:3, rec:3 },
+  { id:'friend', icon:'👥', name:'好友在线', desc:'Notify when friends are online for social play',
+    ctx:[{type:'range',label:'Friends Online',min:0,max:20,val:3,unit:'online'}],
+    check: ctx => ctx[0] >= 2, priority:2, rec:2 }
+];
+
+function initTriggers() {
+  const grid = $('trigger-grid');
+  grid.innerHTML = '';
+
+  TRIGGERS.forEach((trigger, idx) => {
+    const card = document.createElement('div');
+    card.className = 'trigger-card';
+    card.id = 'trigger-' + trigger.id;
+
+    let ctxHTML = '<div class="trigger-ctx">';
+    trigger.ctx.forEach((c, ci) => {
+      if (c.type === 'range') {
+        ctxHTML += `<label>${c.label}: <strong id="tv-${trigger.id}-${ci}">${c.val}${c.unit}</strong></label>
+          <input type="range" min="${c.min}" max="${c.max}" value="${c.val}"
+          oninput="updateTriggerCtx('${trigger.id}',${ci},this.value,'${c.unit}')">`;
+      } else if (c.type === 'select') {
+        const opts = c.options.map(o => `<option value="${o}" ${o===c.val?'selected':''}>${o}</option>`).join('');
+        ctxHTML += `<label>${c.label}</label>
+          <select onchange="updateTriggerCtx('${trigger.id}',${ci},this.value,'')">${opts}</select>`;
+      }
+    });
+    ctxHTML += '</div>';
+
+    card.innerHTML = `
+      <div class="trigger-icon">${trigger.icon}</div>
+      <div class="trigger-name">${trigger.name}</div>
+      <div class="trigger-desc">${trigger.desc}</div>
+      ${ctxHTML}
+      <div class="trigger-status off" id="ts-${trigger.id}">Inactive</div>
+      <div class="trigger-rec" id="tr-${trigger.id}"></div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Evaluate all triggers initially
+  TRIGGERS.forEach(t => evaluateTrigger(t));
+  updatePriorityList();
+}
+
+// Store current context values
+const triggerCtxValues = {};
+TRIGGERS.forEach(t => {
+  triggerCtxValues[t.id] = t.ctx.map(c => c.val);
+});
+
+function updateTriggerCtx(triggerId, ctxIdx, value, unit) {
+  triggerCtxValues[triggerId][ctxIdx] = isNaN(value) ? value : parseFloat(value);
+  const display = $('tv-' + triggerId + '-' + ctxIdx);
+  if (display) display.textContent = value + unit;
+
+  const trigger = TRIGGERS.find(t => t.id === triggerId);
+  evaluateTrigger(trigger);
+  updatePriorityList();
+}
+
+function evaluateTrigger(trigger) {
+  const ctx = triggerCtxValues[trigger.id];
+  const active = trigger.check(ctx);
+  const card = $('trigger-' + trigger.id);
+  const status = $('ts-' + trigger.id);
+  const rec = $('tr-' + trigger.id);
+
+  if (active) {
+    card.classList.add('activated');
+    status.className = 'trigger-status on';
+    status.textContent = '● Active';
+    const gameName = GAMES[trigger.rec].name;
+    rec.textContent = '→ Recommend: ' + gameName;
+  } else {
+    card.classList.remove('activated');
+    status.className = 'trigger-status off';
+    status.textContent = 'Inactive';
+    rec.textContent = '';
+  }
+}
+
+function updatePriorityList() {
+  const active = TRIGGERS.filter(t => {
+    const ctx = triggerCtxValues[t.id];
+    return t.check(ctx);
+  }).sort((a, b) => b.priority - a.priority);
+
+  const list = $('priority-list');
+  list.innerHTML = '';
+  if (active.length === 0) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--dim);padding:8px">No active triggers. Adjust context sliders to activate.</div>';
+    return;
+  }
+  active.forEach((t, i) => {
+    const item = document.createElement('div');
+    item.className = 'priority-item';
+    item.style.background = i === 0 ? 'rgba(255,215,0,0.08)' : 'transparent';
+    item.innerHTML = `
+      <span class="p-num">${i + 1}</span>
+      <span style="font-size:16px">${t.icon}</span>
+      <span class="p-name">${t.name}</span>
+      <div class="p-bar"><div class="p-bar-fill" style="width:${t.priority * 10}%"></div></div>
+      <span style="font-size:10px;color:var(--dim)">${GAMES[t.rec].name}</span>
+    `;
+    list.appendChild(item);
+  });
+}
+
+/* =========================================================
+   5. LEARNING CURVE — Profile Evolution
+   ========================================================= */
+let learnCanvas, learnCtx, learnW, learnH;
+let learningData = [];
+let learningAnimId = null;
+let learningStep = 0;
+
+function initLearningChart() {
+  learnCanvas = $('learn-canvas');
+  learnCtx = learnCanvas.getContext('2d');
+  resizeLearningCanvas();
+  window.addEventListener('resize', resizeLearningCanvas);
+  drawLearningChart([]);
+}
+
+function resizeLearningCanvas() {
+  if (!learnCanvas) return;
+  const wrap = learnCanvas.parentElement;
+  const ratio = window.devicePixelRatio || 1;
+  learnW = wrap.clientWidth - 32;
+  learnH = 280;
+  learnCanvas.style.width = learnW + 'px';
+  learnCanvas.style.height = learnH + 'px';
+  learnCanvas.width = learnW * ratio;
+  learnCanvas.height = learnH * ratio;
+  learnCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  drawLearningChart(learningData);
+}
+
+function initLearningLegend() {
+  const legend = $('learn-legend');
+  legend.innerHTML = DIMS.map((d, i) =>
+    `<div class="learn-legend-item"><div class="learn-legend-dot" style="background:${DIM_COLORS[i]}"></div>${DIM_LABELS[i]}</div>`
+  ).join('');
+}
+
+function startLearningSim() {
+  if (learningAnimId) return;
+  $('learn-btn').disabled = true;
+
+  learningData = [];
+  learningStep = 0;
+
+  // Start with current profile
+  const startProfile = {};
+  DIMS.forEach(d => startProfile[d] = tasteProfile[d]);
+  learningData.push({ ...startProfile });
+
+  simulateNextGame();
+}
+
+function simulateNextGame() {
+  if (learningStep >= 20) {
+    $('learn-btn').disabled = false;
+    learningAnimId = null;
+    return;
+  }
+
+  // Pick a random game to "play"
+  const gameIdx = Math.floor(Math.random() * 10);
+  const gameWeights = GAME_DIMS[gameIdx].weights;
+
+  // Slightly shift profile toward the game's dimensions
+  const lastProfile = { ...learningData[learningData.length - 1] };
+  DIMS.forEach(dim => {
+    const weight = gameWeights[dim] || 0.05;
+    const shift = (Math.random() - 0.3) * weight * 20; // biased toward increase
+    lastProfile[dim] = Math.max(5, Math.min(100, lastProfile[dim] + shift));
+  });
+
+  learningStep++;
+  learningData.push(lastProfile);
+  $('learn-count').textContent = learningStep;
+
+  drawLearningChart(learningData);
+
+  learningAnimId = setTimeout(simulateNextGame, 400);
+}
+
+function resetLearning() {
+  if (learningAnimId) { clearTimeout(learningAnimId); learningAnimId = null; }
+  learningData = [];
+  learningStep = 0;
+  $('learn-count').textContent = '0';
+  $('learn-btn').disabled = false;
+  drawLearningChart([]);
+}
+
+function drawLearningChart(data) {
+  const c = learnCtx, w = learnW, h = learnH;
+  if (!c) return;
+
+  c.clearRect(0, 0, w, h);
+
+  const padL = 40, padR = 20, padT = 20, padB = 30;
+  const chartW = w - padL - padR;
+  const chartH = h - padT - padB;
+
+  // Background
+  c.fillStyle = 'rgba(15,52,96,0.2)';
+  c.fillRect(padL, padT, chartW, chartH);
+
+  // Grid lines
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + chartH * i / 4;
+    c.beginPath();
+    c.moveTo(padL, y);
+    c.lineTo(padL + chartW, y);
+    c.strokeStyle = 'rgba(255,255,255,0.06)';
+    c.lineWidth = 1;
+    c.stroke();
+
+    // Y labels
+    c.fillStyle = 'rgba(255,255,255,0.3)';
+    c.font = '10px "Segoe UI",system-ui,sans-serif';
+    c.textAlign = 'right';
+    c.textBaseline = 'middle';
+    c.fillText(100 - i * 25, padL - 6, y);
+  }
+
+  // X axis labels
+  const maxPoints = Math.max(data.length, 20);
+  c.textAlign = 'center';
+  c.textBaseline = 'top';
+  for (let i = 0; i <= 20; i += 5) {
+    const x = padL + (i / maxPoints) * chartW;
+    c.fillText(i, x, padT + chartH + 8);
+  }
+
+  // X label
+  c.fillStyle = 'rgba(255,255,255,0.3)';
+  c.font = '10px "Segoe UI",system-ui,sans-serif';
+  c.fillText('Games Played', padL + chartW / 2, padT + chartH + 18);
+
+  if (data.length < 2) {
+    // Empty state
+    c.fillStyle = 'rgba(255,255,255,0.15)';
+    c.font = '14px "Segoe UI",system-ui,sans-serif';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText('Click "Simulate 20 Games" to see profile evolution', w / 2, h / 2);
+    return;
+  }
+
+  // Draw lines for each dimension
+  DIMS.forEach((dim, di) => {
+    c.beginPath();
+    c.strokeStyle = DIM_COLORS[di];
+    c.lineWidth = 2;
+    c.lineJoin = 'round';
+
+    for (let i = 0; i < data.length; i++) {
+      const x = padL + (i / (maxPoints - 1)) * chartW;
+      const y = padT + chartH * (1 - data[i][dim] / 100);
+      i === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
+    }
+    c.stroke();
+
+    // Draw end point
+    if (data.length > 0) {
+      const lastIdx = data.length - 1;
+      const lx = padL + (lastIdx / (maxPoints - 1)) * chartW;
+      const ly = padT + chartH * (1 - data[lastIdx][dim] / 100);
+      c.beginPath();
+      c.arc(lx, ly, 4, 0, Math.PI * 2);
+      c.fillStyle = DIM_COLORS[di];
+      c.fill();
+    }
+  });
+
+  // Highlight current step
+  if (data.length > 1) {
+    const lastIdx = data.length - 1;
+    const lx = padL + (lastIdx / (maxPoints - 1)) * chartW;
+    c.beginPath();
+    c.moveTo(lx, padT);
+    c.lineTo(lx, padT + chartH);
+    c.strokeStyle = 'rgba(255,215,0,0.2)';
+    c.lineWidth = 1;
+    c.setLineDash([4, 4]);
+    c.stroke();
+    c.setLineDash([]);
+  }
+}
 </script>
 </body>
 </html>

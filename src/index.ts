@@ -25,3 +25,8 @@ export { QuickMathGame } from './templates/QuickMathGame';
 export { BubblePopGame } from './templates/BubblePopGame';
 export { WordScrambleGame } from './templates/WordScrambleGame';
 export { ChaseLightGame } from './templates/ChaseLightGame';
+export { Game2048 } from './templates/Game2048';
+export { SnakeGame } from './templates/SnakeGame';
+export { BreakoutGame } from './templates/BreakoutGame';
+export { WhackAMoleGame } from './templates/WhackAMoleGame';
+export { CatchCoinsGame } from './templates/CatchCoinsGame';

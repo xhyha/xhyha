@@ -9,6 +9,11 @@ import { QuickMathGame } from '../templates/QuickMathGame';
 import { BubblePopGame } from '../templates/BubblePopGame';
 import { WordScrambleGame } from '../templates/WordScrambleGame';
 import { ChaseLightGame } from '../templates/ChaseLightGame';
+import { Game2048 } from '../templates/Game2048';
+import { SnakeGame } from '../templates/SnakeGame';
+import { BreakoutGame } from '../templates/BreakoutGame';
+import { WhackAMoleGame } from '../templates/WhackAMoleGame';
+import { CatchCoinsGame } from '../templates/CatchCoinsGame';
 
 /**
  * Factory for creating game template instances.
@@ -87,5 +92,10 @@ export class TemplateFactory {
     this.templatesByName.set('BubblePop', new BubblePopGame());
     this.templatesByName.set('WordScramble', new WordScrambleGame());
     this.templatesByName.set('ChaseLight', new ChaseLightGame());
+    this.templatesByName.set('Game2048', new Game2048());
+    this.templatesByName.set('SnakeGame', new SnakeGame());
+    this.templatesByName.set('Breakout', new BreakoutGame());
+    this.templatesByName.set('WhackAMole', new WhackAMoleGame());
+    this.templatesByName.set('CatchCoins', new CatchCoinsGame());
   }
 }

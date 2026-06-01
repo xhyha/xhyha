@@ -1,0 +1,236 @@
+/**
+ * Genesis AI Micro-Game Engine - HarmonyOS Module Configuration
+ *
+ * 此文件为 HarmonyOS 元服务 (MetaAbility) 的模块配置参考。
+ * 在实际项目中，此文件应放置于 entry/src/main/module.json5。
+ *
+ * 文档参考：https://developer.harmonyos.com/cn/docs/documentation/doc-guides/module-config-0000001478061365
+ */
+{
+  "module": {
+    // ==================== 基本信息配置 ====================
+
+    "name": "entry",
+    "type": "entry",
+    "description": "$string:module_desc",
+
+    "mainElement": "EntryAbility",
+
+    // 支持的设备类型
+    "deviceTypes": [
+      "phone",
+      "tablet"
+    ],
+
+    // 安装时交付（元服务必须为 true）
+    "deliveryWithInstall": true,
+
+    // 免安装支持（元服务核心特性，必须为 true）
+    "installationFree": true,
+
+    // 页面路由配置文件
+    "pages": "$profile:main_pages",
+
+    // ==================== 应用权限声明 ====================
+
+    "requestPermissions": [
+      {
+        // 网络访问权限（系统授权）
+        "name": "ohos.permission.INTERNET",
+        "reason": "$string:permission_internet_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "inuse"
+        }
+      },
+      {
+        // 网络状态获取（系统授权）
+        "name": "ohos.permission.GET_NETWORK_INFO",
+        "reason": "$string:permission_network_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "inuse"
+        }
+      },
+      {
+        // 电池信息（系统授权）—— 用于 TriggerEngine 根据电量调整触发策略
+        "name": "ohos.permission.GET_BATTERY_INFO",
+        "reason": "$string:permission_battery_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "inuse"
+        }
+      },
+      {
+        // 大致位置（用户授权）—— 用于天气、地域触发器
+        "name": "ohos.permission.APPROXIMATELY_LOCATION",
+        "reason": "$string:permission_location_reason",
+        "usedScene": {
+          "abilities": ["EntryAbility"],
+          "when": "inuse"
+        }
+      }
+    ],
+
+    // ==================== Ability 配置 ====================
+
+    "abilities": [
+      {
+        "name": "EntryAbility",
+        "srcEntry": "./ets/entryability/EntryAbility.ets",
+        "description": "$string:EntryAbility_desc",
+        "icon": "$media:icon",
+        "label": "$string:EntryAbility_label",
+
+        // 启动页配置
+        "startWindowIcon": "$media:startIcon",
+        "startWindowBackground": "$color:startWindowBackgroundColor",
+
+        // 允许被外部调用
+        "exported": true,
+
+        // 技能声明 —— 定义 Ability 可响应的意图
+        "skills": [
+          {
+            "entities": [
+              "entity.system.home"
+            ],
+            "actions": [
+              "action.system.home"
+            ]
+          }
+        ],
+
+        // 元数据 —— 声明服务卡片配置
+        "metadata": [
+          {
+            "name": "ohos.extension.form",
+            "resource": "$profile:form_config"
+          }
+        ],
+
+        // 支持的窗口模式
+        "modes": {
+          "defaultMode": "fullscreen"
+        },
+
+        // 主题配置
+        "theme": {
+          "colorMode": "dark"
+        }
+      }
+    ],
+
+    // ==================== ExtensionAbility 配置 ====================
+
+    "extensionAbilities": [
+      {
+        "name": "GameWidgetAbility",
+        "srcEntry": "./ets/widget/GameWidget.ets",
+        "icon": "$media:icon",
+        "label": "$string:widget_label",
+        "description": "$string:widget_desc",
+
+        // 类型为 form（服务卡片）
+        "type": "form",
+
+        // 允许被外部调用
+        "exported": true,
+
+        // 元数据 —— 引用服务卡片配置文件
+        "metadata": [
+          {
+            "name": "ohos.extension.form",
+            "resource": "$profile:form_config"
+          }
+        ]
+      }
+    ],
+
+    // ==================== 代理配置 ====================
+
+    "proxy": {
+      "services": []
+    }
+  }
+}
+
+// ==================== 伴随配置文件说明 ====================
+
+// ---------- main_pages.json ----------
+// 位置：entry/src/main/resources/base/profile/main_pages.json
+// 内容：
+// {
+//   "src": [
+//     "pages/GamePage"
+//   ]
+// }
+
+// ---------- form_config.json ----------
+// 位置：entry/src/main/resources/base/profile/form_config.json
+// 内容：
+// {
+//   "forms": [
+//     {
+//       "name": "gameWidget",
+//       "displayName": "Genesis 每日游戏",
+//       "description": "查看并直接玩今日 AI 推荐微游戏",
+//       "src": "./ets/widget/GameWidget.ets",
+//       "uiSyntax": "arkts",
+//       "window": {
+//         "designWidth": 720,
+//         "autoDesignWidth": true
+//       },
+//       "colorMode": "dark",
+//       "isDefault": true,
+//       "updateEnabled": true,
+//       "scheduledUpdateTime": "10:30",
+//       "updateDuration": 1,
+//       "defaultDimension": "2*2",
+//       "supportDimensions": [
+//         "2*2",
+//         "2*4"
+//       ],
+//       "formConfigAbility": "ability://com.genesis.microgame.GameWidgetAbility"
+//     }
+//   ]
+// }
+
+// ---------- app.json5 (项目根目录) ----------
+// 位置：AppScope/app.json5
+// 内容：
+// {
+//   "app": {
+//     "bundleName": "com.genesis.microgame",
+//     "vendor": "genesis",
+//     "versionCode": 1000000,
+//     "versionName": "1.0.0",
+//     "icon": "$media:app_icon",
+//     "label": "$string:app_name"
+//   }
+// }
+
+// ---------- 字符串资源 ----------
+// 位置：entry/src/main/resources/base/element/string.json
+// {
+//   "string": [
+//     { "name": "module_desc", "value": "Genesis AI 微游戏引擎" },
+//     { "name": "EntryAbility_desc", "value": "Genesis 元服务入口" },
+//     { "name": "EntryAbility_label", "value": "Genesis AI 微游戏" },
+//     { "name": "widget_label", "value": "Genesis 每日游戏" },
+//     { "name": "widget_desc", "value": "查看并直接玩今日 AI 推荐微游戏" },
+//     { "name": "app_name", "value": "Genesis AI 微游戏" },
+//     { "name": "permission_internet_reason", "value": "用于获取游戏内容和提交排行榜数据" },
+//     { "name": "permission_network_reason", "value": "用于检测网络状态以优化游戏体验" },
+//     { "name": "permission_battery_reason", "value": "用于根据电量智能调整游戏触发频率" },
+//     { "name": "permission_location_reason", "value": "用于根据天气和地域推荐个性化游戏" }
+//   ]
+// }
+
+// ---------- 颜色资源 ----------
+// 位置：entry/src/main/resources/base/element/color.json
+// {
+//   "color": [
+//     { "name": "startWindowBackgroundColor", "value": "#1A1A2E" }
+//   ]
+// }

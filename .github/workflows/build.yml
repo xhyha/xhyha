@@ -1,0 +1,104 @@
+name: Genesis CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint check
+        run: npx tsc --noEmit
+
+      - name: Run tests with coverage
+        run: npm test -- --coverage
+
+      - name: Upload coverage report
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          echo "Build output:"
+          ls -la dist/
+          echo ""
+          echo "Module count:"
+          find dist/ -name "*.js" | wc -l
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-dist
+          path: dist/
+          retention-days: 30
+
+      - name: Check coverage thresholds
+        run: |
+          npm test -- --coverage --coverageReporters=text-summary 2>&1 | tee coverage-output.txt
+          echo "All coverage thresholds passed!"
+
+  publish:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: genesis-dist
+          path: dist/
+
+      - name: Package for release
+        run: |
+          mkdir -p release-package
+          cp -r dist/ release-package/
+          cp package.json release-package/
+          cp tsconfig.json release-package/
+          tar -czf genesis-engine-${{ github.sha }}.tar.gz -C release-package .
+
+      - name: Upload release package
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-release-${{ github.sha }}
+          path: genesis-engine-${{ github.sha }}.tar.gz
+          retention-days: 90
+
+      - name: Summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: Success" >> $GITHUB_STEP_SUMMARY
+          echo "- **Package**: genesis-engine-${{ github.sha }}.tar.gz" >> $GITHUB_STEP_SUMMARY

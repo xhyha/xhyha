@@ -63,7 +63,21 @@ describe('GenesisService', () => {
     });
 
     it('should return null when no triggers match the default context', () => {
-      const game = service.checkForMicroGame();
+      // Use a safe context that won't match any trigger:
+      // hour=14 (no commute/morning/late_night), weekend=true (no commute),
+      // no download, no losses, not bored, clear weather, 0 friends
+      const game = service.checkForMicroGame({
+        hour: 14,
+        isWeekend: true,
+        dayOfWeek: 6,
+        emotionState: EmotionState.HAPPY,
+        friendOnlineCount: 0,
+        weatherCondition: 'clear',
+        isDownloading: false,
+        consecutiveLosses: 0,
+        lastGameTime: 0,
+      });
+
       expect(game).toBeNull();
     });
 
@@ -88,6 +102,14 @@ describe('GenesisService', () => {
       const game = service.checkForMicroGame({
         isDownloading: true,
         downloadProgress: 0,
+        hour: 14,
+        isWeekend: true,
+        dayOfWeek: 6,
+        emotionState: EmotionState.HAPPY,
+        friendOnlineCount: 0,
+        weatherCondition: 'clear',
+        consecutiveLosses: 0,
+        lastGameTime: 0,
       });
 
       expect(game).toBeNull();
@@ -97,6 +119,14 @@ describe('GenesisService', () => {
       const game = service.checkForMicroGame({
         isDownloading: true,
         downloadProgress: 95,
+        hour: 14,
+        isWeekend: true,
+        dayOfWeek: 6,
+        emotionState: EmotionState.HAPPY,
+        friendOnlineCount: 0,
+        weatherCondition: 'clear',
+        consecutiveLosses: 0,
+        lastGameTime: 0,
       });
 
       expect(game).toBeNull();
@@ -114,6 +144,14 @@ describe('GenesisService', () => {
     it('should NOT trigger when consecutive losses < 3', () => {
       const game = service.checkForMicroGame({
         consecutiveLosses: 2,
+        hour: 14,
+        isWeekend: true,
+        dayOfWeek: 6,
+        emotionState: EmotionState.HAPPY,
+        friendOnlineCount: 0,
+        weatherCondition: 'clear',
+        isDownloading: false,
+        lastGameTime: 0,
       });
 
       expect(game).toBeNull();
@@ -242,16 +280,32 @@ describe('GenesisService', () => {
     it('should NOT trigger friend online when only 1 friend online', () => {
       const game = service.checkForMicroGame({
         friendOnlineCount: 1,
+        hour: 14,
+        isWeekend: true,
+        dayOfWeek: 6,
+        emotionState: EmotionState.HAPPY,
+        weatherCondition: 'clear',
+        isDownloading: false,
+        consecutiveLosses: 0,
+        lastGameTime: 0,
       });
 
       expect(game).toBeNull();
     });
 
     it('should respect cooldown - not trigger same trigger twice in a row', () => {
-      // First call triggers
+      // First call triggers with a safe download context (only download trigger matches)
       const game1 = service.checkForMicroGame({
         isDownloading: true,
         downloadProgress: 50,
+        hour: 14,
+        isWeekend: true,
+        dayOfWeek: 6,
+        emotionState: EmotionState.HAPPY,
+        friendOnlineCount: 0,
+        weatherCondition: 'clear',
+        consecutiveLosses: 0,
+        lastGameTime: 0,
       });
       expect(game1).not.toBeNull();
 
@@ -259,6 +313,14 @@ describe('GenesisService', () => {
       const game2 = service.checkForMicroGame({
         isDownloading: true,
         downloadProgress: 50,
+        hour: 14,
+        isWeekend: true,
+        dayOfWeek: 6,
+        emotionState: EmotionState.HAPPY,
+        friendOnlineCount: 0,
+        weatherCondition: 'clear',
+        consecutiveLosses: 0,
+        lastGameTime: 0,
       });
       expect(game2).toBeNull();
     });
