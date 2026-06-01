@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Genesis — Micro-Game Engine</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#1A1A2E;--bg2:#16213E;--accent:#CF0A2C;--gold:#FFD700;--text:#E0E0E0;--card:#0F3460;--dim:#8A8A9A}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;overflow:hidden;height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center}
+#menu-screen{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:20px}
+#menu-screen h1{font-size:clamp(28px,5vw,42px);letter-spacing:12px;color:var(--gold);margin:16px 0 4px;text-transform:uppercase;font-weight:900}
+#menu-screen .subtitle{color:var(--dim);font-size:13px;letter-spacing:4px;margin-bottom:24px}
+#game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;width:100%;max-width:900px;padding:0 10px}
+.game-card{background:linear-gradient(135deg,var(--card),#1a2a50);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.game-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 8px 30px rgba(207,10,44,.25)}
+.game-card:active{transform:scale(.97)}
+.game-card .card-num{position:absolute;top:10px;right:14px;font-size:32px;font-weight:900;color:rgba(255,255,255,.06)}
+.game-card h2{font-size:17px;color:var(--gold);margin-bottom:6px}
+.game-card p{font-size:12px;color:var(--dim);line-height:1.5}
+.game-card .tag{display:inline-block;margin-top:10px;font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(207,10,44,.2);color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+#game-screen{width:100%;height:100%;display:none;flex-direction:column;align-items:center}
+#game-hud{width:100%;max-width:500px;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;gap:8px}
+#back-btn{background:none;border:1px solid rgba(255,255,255,.15);color:var(--text);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;transition:all .2s;white-space:nowrap}
+#back-btn:hover{border-color:var(--accent);color:var(--accent)}
+#game-title{font-size:14px;color:var(--gold);letter-spacing:2px;font-weight:700;flex:1;text-align:center}
+.hud-stat{font-size:13px;color:var(--dim);white-space:nowrap}
+.hud-stat span{color:var(--gold);font-weight:700}
+#canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;position:relative}
+canvas{display:block;border-radius:12px;touch-action:none}
+#overlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(26,26,46,.92);border-radius:12px;z-index:10}
+#overlay h2{font-size:28px;color:var(--gold);margin-bottom:8px}
+#overlay p{color:var(--dim);margin-bottom:20px;font-size:14px}
+#overlay button{background:var(--accent);color:#fff;border:none;padding:12px 32px;border-radius:10px;font-size:15px;cursor:pointer;font-weight:700;letter-spacing:1px;transition:all .2s}
+#overlay button:hover{background:#e0103a;transform:scale(1.04)}
+@media(max-width:600px){#game-grid{grid-template-columns:1fr}#game-hud{padding:8px 10px}#game-title{font-size:12px;letter-spacing:1px}}
+</style>
+</head>
+<body>
+
+<div id="menu-screen">
+  <h1>Genesis</h1>
+  <div class="subtitle">MICRO-GAME ENGINE</div>
+  <div id="game-grid"></div>
+</div>
+
+<div id="game-screen">
+  <div id="game-hud">
+    <button id="back-btn">&larr; Menu</button>
+    <div id="game-title"></div>
+    <div class="hud-stat">Score: <span id="hud-score">0</span></div>
+    <div class="hud-stat">Time: <span id="hud-timer">30</span>s</div>
+  </div>
+  <div id="canvas-wrap">
+    <canvas id="c"></canvas>
+    <div id="overlay">
+      <h2 id="ov-title"></h2>
+      <p id="ov-msg"></p>
+      <button id="ov-btn"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========== GENESIS MICRO-GAME ENGINE ========== */
+const $ = id => document.getElementById(id);
+const BG = '#1A1A2E', BG2 = '#16213E', ACCENT = '#CF0A2C', GOLD = '#FFD700', DIM = '#8A8A9A';
+
+const GAMES = [
+  {id:'elimination', name:'Elimination', desc:'Swap adjacent tiles to match 3 or more of the same color.', tag:'Match-3'},
+  {id:'rhythmtap',   name:'RhythmTap',   desc:'Tap circles when they pulse at peak brightness.', tag:'Rhythm'},
+  {id:'memoryflip',  name:'MemoryFlip',   desc:'Flip cards and find all matching pairs.', tag:'Memory'},
+  {id:'breathing',   name:'Breathing',    desc:'Follow the breathing circle: inhale, hold, exhale, rest.', tag:'Relax'},
+  {id:'drawing',     name:'Drawing',      desc:'Connect numbered dots in the correct order.', tag:'Puzzle'},
+  {id:'colormatch',  name:'ColorMatch',   desc:'Tap the button matching the DISPLAY color, not the word!', tag:'Stroop'},
+  {id:'quickmath',   name:'QuickMath',    desc:'Solve arithmetic problems as fast as you can.', tag:'Math'},
+  {id:'bubblepop',   name:'BubblePop',    desc:'Pop the rising bubbles before they escape!', tag:'Action'},
+  {id:'wordscramble',name:'WordScramble', desc:'Unscramble the letters to spell the hidden word.', tag:'Word'},
+  {id:'chaselight',  name:'ChaseLight',   desc:'Tap the lit cell before it moves to a new spot!', tag:'Reflex'},
+];
+
+/* ---- Build menu ---- */
+const grid = $('game-grid');
+GAMES.forEach((g, i) => {
+  const card = document.createElement('div');
+  card.className = 'game-card';
+  card.innerHTML = `<div class="card-num">${String(i+1).padStart(2,'0')}</div><h2>${g.name}</h2><p>${g.desc}</p><div class="tag">${g.tag}</div>`;
+  card.onclick = () => launchGame(i);
+  grid.appendChild(card);
+});
+
+/* ---- Engine Core ---- */
+const canvas = $('c'), ctx = canvas.getContext('2d');
+let W, H, currentGame = null, animId = null, score = 0, timeLeft = 30, timerInterval = null;
+
+function resize() {
+  const wrap = $('canvas-wrap');
+  const maxW = Math.min(wrap.clientWidth - 20, 480);
+  const maxH = wrap.clientHeight - 20;
+  const ratio = window.devicePixelRatio || 1;
+  W = maxW; H = Math.min(maxH, maxW * 1.3);
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  canvas.width = W * ratio; canvas.height = H * ratio;
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
+window.addEventListener('resize', () => { if (currentGame) resize(); });
+
+function launchGame(idx) {
+  $('menu-screen').style.display = 'none';
+  $('game-screen').style.display = 'flex';
+  $('game-title').textContent = GAMES[idx].name.toUpperCase();
+  score = 0; timeLeft = 30;
+  updateHUD();
+  resize();
+  hideOverlay();
+  currentGame = idx;
+  startGame(idx);
+  startTimer();
+}
+function updateHUD() {
+  $('hud-score').textContent = score;
+  $('hud-timer').textContent = timeLeft;
+}
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateHUD();
+    if (timeLeft <= 0) { clearInterval(timerInterval); endGame(); }
+  }, 1000);
+}
+function addScore(n) { score += n; updateHUD(); }
+function showOverlay(title, msg, btnText, cb) {
+  $('ov-title').textContent = title;
+  $('ov-msg').textContent = msg;
+  $('ov-btn').textContent = btnText;
+  $('overlay').style.display = 'flex';
+  $('ov-btn').onclick = cb;
+}
+function hideOverlay() { $('overlay').style.display = 'none'; }
+
+function endGame() {
+  cancelAnimationFrame(animId);
+  clearInterval(timerInterval);
+  currentGame && GAMES[currentGame].cleanup && GAMES[currentGame].cleanup();
+  showOverlay('Game Over', `Final Score: ${score}`, 'Play Again', () => { hideOverlay(); launchGame(currentGame); });
+}
+
+$('back-btn').onclick = () => {
+  cancelAnimationFrame(animId);
+  clearInterval(timerInterval);
+  currentGame && GAMES[currentGame].cleanup && GAMES[currentGame].cleanup();
+  currentGame = null;
+  $('game-screen').style.display = 'none';
+  $('menu-screen').style.display = 'flex';
+};
+
+/* ---- Input ---- */
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  return { x: t.clientX - r.left, y: t.clientY - r.top };
+}
+function onTap(fn) {
+  const handler = e => { e.preventDefault(); fn(getPos(e)); };
+  canvas.addEventListener('pointerdown', handler);
+  return () => canvas.removeEventListener('pointerdown', handler);
+}
+
+/* ---- Drawing helpers ---- */
+function clearCanvas() { ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H); }
+function drawText(txt, x, y, size, color, align='center') {
+  ctx.fillStyle = color || '#E0E0E0';
+  ctx.font = `bold ${size}px 'Segoe UI',system-ui,sans-serif`;
+  ctx.textAlign = align; ctx.textBaseline = 'middle';
+  ctx.fillText(txt, x, y);
+}
+function drawRoundRect(x, y, w, h, r, fill, stroke) {
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, r);
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); }
+}
+function drawCircle(x, y, r, fill, stroke) {
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); }
+}
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+/* ===================================================================
+   GAME IMPLEMENTATIONS
+   =================================================================== */
+
+const gameImpl = {};
+let removeInput = null;
+
+function startGame(idx) {
+  if (removeInput) removeInput();
+  const id = GAMES[idx].id;
+  gameImpl[id] && gameImpl[id]();
+}
+
+/* ---------- 1. ELIMINATION (Match-3) ---------- */
+gameImpl.elimination = function() {
+  const COLS = 7, ROWS = 7, TYPES = 5;
+  const COLORS = ['#CF0A2C','#FFD700','#00C9A7','#845EC2','#FF6F91'];
+  const pad = 8, topOff = 50;
+  let cellW, cellH, grid, selected = null, animating = false;
+
+  function init() {
+    cellW = (W - pad * 2) / COLS;
+    cellH = (H - topOff - pad) / ROWS;
+    grid = [];
+    for (let r = 0; r < ROWS; r++) {
+      grid[r] = [];
+      for (let c = 0; c < COLS; c++) grid[r][c] = Math.floor(Math.random() * TYPES);
+    }
+    removeMatches();
+  }
+  function removeMatches() {
+    let found = findMatches();
+    while (found.length) {
+      found.forEach(([r,c]) => { grid[r][c] = -1; });
+      for (let c = 0; c < COLS; c++) {
+        let write = ROWS - 1;
+        for (let r = ROWS - 1; r >= 0; r--) {
+          if (grid[r][c] !== -1) { grid[write][c] = grid[r][c]; write--; }
+        }
+        for (let r = write; r >= 0; r--) grid[r][c] = Math.floor(Math.random() * TYPES);
+      }
+      found = findMatches();
+    }
+  }
+  function findMatches() {
+    const m = new Set();
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS - 2; c++) {
+        const v = grid[r][c];
+        if (v >= 0 && grid[r][c+1] === v && grid[r][c+2] === v) {
+          let e = c + 2;
+          while (e + 1 < COLS && grid[r][e+1] === v) e++;
+          for (let i = c; i <= e; i++) m.add(r + ',' + i);
+        }
+      }
+    }
+    for (let c = 0; c < COLS; c++) {
+      for (let r = 0; r < ROWS - 2; r++) {
+        const v = grid[r][c];
+        if (v >= 0 && grid[r+1][c] === v && grid[r+2][c] === v) {
+          let e = r + 2;
+          while (e + 1 < ROWS && grid[e+1][c] === v) e++;
+          for (let i = r; i <= e; i++) m.add(i + ',' + c);
+        }
+      }
+    }
+    return [...m].map(s => s.split(',').map(Number));
+  }
+  function swap(r1,c1,r2,c2) {
+    const tmp = grid[r1][c1]; grid[r1][c1] = grid[r2][c2]; grid[r2][c2] = tmp;
+    const found = findMatches();
+    if (found.length === 0) { grid[r2][c2] = grid[r1][c1]; grid[r1][c1] = tmp; return; }
+    animating = true;
+    let chain = 0;
+    function processMatches() {
+      const f = findMatches();
+      if (!f.length) { animating = false; return; }
+      chain++;
+      addScore(f.length * 5 * chain);
+      f.forEach(([r,c]) => { grid[r][c] = -1; });
+      for (let c = 0; c < COLS; c++) {
+        let write = ROWS - 1;
+        for (let r = ROWS - 1; r >= 0; r--) {
+          if (grid[r][c] !== -1) { grid[write][c] = grid[r][c]; write--; }
+        }
+        for (let r = write; r >= 0; r--) grid[r][c] = Math.floor(Math.random() * TYPES);
+      }
+      setTimeout(processMatches, 200);
+    }
+    processMatches();
+  }
+  init();
+  removeInput = onTap(pos => {
+    if (animating) return;
+    const c = Math.floor((pos.x - pad) / cellW);
+    const r = Math.floor((pos.y - topOff) / cellH);
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) { selected = null; return; }
+    if (!selected) { selected = {r, c}; return; }
+    const dr = Math.abs(selected.r - r), dc = Math.abs(selected.c - c);
+    if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+      swap(selected.r, selected.c, r, c);
+      selected = null;
+    } else { selected = {r, c}; }
+  });
+  function draw() {
+    clearCanvas();
+    drawText('Match 3+ to Score!', W/2, 22, 15, DIM);
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const x = pad + c * cellW + 2, y = topOff + r * cellH + 2;
+      const w = cellW - 4, h = cellH - 4;
+      if (grid[r][c] < 0) continue;
+      const isSelected = selected && selected.r === r && selected.c === c;
+      drawRoundRect(x, y, w, h, 8, COLORS[grid[r][c]], isSelected ? GOLD : 'rgba(255,255,255,0.08)');
+    }
+    animId = requestAnimationFrame(draw);
+  }
+  draw();
+};
+
+/* ---------- 2. RHYTHM TAP ---------- */
+gameImpl.rhythmtap = function() {
+  let circles = [], spawnTimer = 0, spawnInterval = 1.2;
+  function spawn() {
+    const r = 30 + Math.random() * 20;
+    const x = r + Math.random() * (W - r * 2);
+    const y = r + 40 + Math.random() * (H - r * 2 - 60);
+    circles.push({ x, y, r, life: 0, maxLife: 2.0, hit: false });
+  }
+  removeInput = onTap(pos => {
+    for (let i = circles.length - 1; i >= 0; i--) {
+      const c = circles[i];
+      if (c.hit) continue;
+      const dx = pos.x - c.x, dy = pos.y - c.y;
+      if (Math.sqrt(dx*dx + dy*dy) < c.r + 15) {
+        const accuracy = 1 - Math.abs(c.life / c.maxLife - 0.5) * 2;
+        c.hit = true;
+        addScore(Math.round(accuracy * 100));
+      }
+    }
+  });
+  let last = performance.now();
+  function draw(now) {
+    const dt = (now - last) / 1000; last = now;
+    spawnTimer += dt;
+    if (spawnTimer >= spawnInterval) { spawn(); spawnTimer = 0; spawnInterval = Math.max(0.6, spawnInterval - 0.01); }
+    clearCanvas();
+    circles = circles.filter(c => c.life < c.maxLife);
+    circles.forEach(c => {
+      c.life += dt;
+      const t = c.life / c.maxLife;
+      const pulse = Math.sin(t * Math.PI);
+      const alpha = 0.3 + pulse * 0.7;
+      if (c.hit) {
+        drawCircle(c.x, c.y, c.r + 20 * t, `rgba(255,215,0,${1 - t})`);
+      } else {
+        drawCircle(c.x, c.y, c.r, `rgba(207,10,44,${alpha * 0.4})`);
+        drawCircle(c.x, c.y, c.r * pulse, `rgba(207,10,44,${alpha})`, GOLD);
+        drawCircle(c.x, c.y, c.r * 0.3, GOLD);
+      }
+    });
+    drawText('Tap at peak pulse!', W/2, 20, 14, DIM);
+    animId = requestAnimationFrame(draw);
+  }
+  animId = requestAnimationFrame(draw);
+};
+
+/* ---------- 3. MEMORY FLIP ---------- */
+gameImpl.memoryflip = function() {
+  const PAIRS = 8;
+  const SYMBOLS = ['★','♦','♣','♠','♥','●','▲','■'];
+  const COLORS2 = ['#CF0A2C','#FFD700','#00C9A7','#845EC2','#FF6F91','#4B8BBE','#FF9671','#2C73D2'];
+  let cards, flipped = [], matched = [], cols, rows, cardW, cardH, canFlip = true;
+  function init() {
+    cols = 4; rows = 4;
+    const gap = 10, topOff = 50;
+    cardW = (W - gap * (cols + 1)) / cols;
+    cardH = (H - topOff - gap * (rows + 1)) / rows;
+    let deck = [];
+    for (let i = 0; i < PAIRS; i++) deck.push(i, i);
+    for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i],deck[j]] = [deck[j],deck[i]]; }
+    cards = []; matched = new Set();
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      cards.push({ r, c, type: deck[r * cols + c], flip: 0, flipTarget: 0 });
+    }
+  }
+  init();
+  removeInput = onTap(pos => {
+    if (!canFlip) return;
+    const gap = 10, topOff = 50;
+    for (const card of cards) {
+      const x = gap + card.c * (cardW + gap), y = topOff + gap + card.r * (cardH + gap);
+      if (pos.x >= x && pos.x <= x + cardW && pos.y >= y && pos.y <= y + cardH) {
+        if (matched.has(card.type)) return;
+        if (flipped.includes(card)) return;
+        card.flipTarget = 1; flipped.push(card);
+        if (flipped.length === 2) {
+          canFlip = false;
+          if (flipped[0].type === flipped[1].type) {
+            matched.add(flipped[0].type);
+            addScore(50); flipped = []; canFlip = true;
+            if (matched.size === PAIRS) addScore(timeLeft * 5);
+          } else {
+            setTimeout(() => { flipped.forEach(c => c.flipTarget = 0); flipped = []; canFlip = true; }, 800);
+          }
+        }
+        return;
+      }
+    }
+  });
+  function draw() {
+    clearCanvas();
+    drawText(`Pairs: ${matched.size}/${PAIRS}`, W/2, 22, 15, DIM);
+    const gap = 10, topOff = 50;
+    cards.forEach(card => {
+      const x = gap + card.c * (cardW + gap), y = topOff + gap + card.r * (cardH + gap);
+      card.flip = lerp(card.flip, card.flipTarget, 0.15);
+      const isFlipped = card.flip > 0.5;
+      const scaleX = Math.abs(Math.cos(card.flip * Math.PI));
+      ctx.save();
+      ctx.translate(x + cardW / 2, y + cardH / 2);
+      ctx.scale(scaleX, 1);
+      if (matched.has(card.type)) {
+        drawRoundRect(-cardW/2, -cardH/2, cardW, cardH, 10, 'rgba(0,201,167,0.15)', '#00C9A7');
+      } else if (isFlipped) {
+        drawRoundRect(-cardW/2, -cardH/2, cardW, cardH, 10, BG2, COLORS2[card.type]);
+        ctx.fillStyle = COLORS2[card.type];
+        ctx.font = `bold ${Math.min(cardW, cardH) * 0.45}px sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(SYMBOLS[card.type], 0, 0);
+      } else {
+        drawRoundRect(-cardW/2, -cardH/2, cardW, cardH, 10, '#0F3460', 'rgba(255,255,255,0.1)');
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.font = `bold ${Math.min(cardW, cardH) * 0.35}px sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('?', 0, 0);
+      }
+      ctx.restore();
+    });
+    animId = requestAnimationFrame(draw);
+  }
+  draw();
+};
+
+/* ---------- 4. BREATHING ---------- */
+gameImpl.breathing = function() {
+  const phases = [
+    { name: 'Inhale', dur: 4, scale: 1.0 },
+    { name: 'Hold',   dur: 4, scale: 1.0 },
+    { name: 'Exhale', dur: 4, scale: 0.0 },
+    { name: 'Rest',   dur: 2, scale: 0.0 },
+  ];
+  let phaseIdx = 0, phaseTime = 0, totalBreaths = 0, tapping = false;
+  const baseR = Math.min(W, H) * 0.2;
+  removeInput = onTap(() => { tapping = true; });
+  let last = performance.now();
+  function draw(now) {
+    const dt = (now - last) / 1000; last = now;
+    phaseTime += dt;
+    const phase = phases[phaseIdx];
+    const t = Math.min(phaseTime / phase.dur, 1);
+    if (phaseTime >= phase.dur) {
+      phaseTime = 0;
+      if (phaseIdx === 3) { totalBreaths++; addScore(tapping ? 25 : 0); }
+      phaseIdx = (phaseIdx + 1) % 4;
+      tapping = false;
+    }
+    clearCanvas();
+    /* Scale */
+    let scale;
+    if (phaseIdx === 0) scale = t;
+    else if (phaseIdx === 1) scale = 1;
+    else if (phaseIdx === 2) scale = 1 - t;
+    else scale = 0;
+    const r = baseR * 0.4 + baseR * scale;
+    /* Glow */
+    const grad = ctx.createRadialGradient(W/2, H/2, r * 0.2, W/2, H/2, r * 1.6);
+    grad.addColorStop(0, `rgba(0,201,167,${0.15 + scale * 0.2})`);
+    grad.addColorStop(1, 'rgba(0,201,167,0)');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+    /* Circle */
+    drawCircle(W/2, H/2, r, `rgba(0,201,167,${0.2 + scale * 0.5})`, '#00C9A7');
+    drawCircle(W/2, H/2, r * 0.5, `rgba(0,201,167,${0.3 + scale * 0.4})`);
+    /* Text */
+    drawText(phases[phaseIdx].name.toUpperCase(), W/2, H/2 - r - 40, 28, GOLD);
+    /* Progress bar */
+    const bw = W * 0.6, bh = 6, bx = (W - bw)/2, by = H/2 + r + 50;
+    drawRoundRect(bx, by, bw, bh, 3, 'rgba(255,255,255,0.1)');
+    drawRoundRect(bx, by, bw * t, bh, 3, '#00C9A7');
+    drawText(`Breaths: ${totalBreaths}`, W/2, by + 30, 14, DIM);
+    drawText(tapping ? '✓ Holding...' : 'Tap & hold breath', W/2, by + 55, 13, tapping ? '#00C9A7' : DIM);
+    animId = requestAnimationFrame(draw);
+  }
+  animId = requestAnimationFrame(draw);
+};
+
+/* ---------- 5. DRAWING (Connect Dots) ---------- */
+gameImpl.drawing = function() {
+  const COUNT = 10;
+  let dots = [], lines = [], currentDot = 0, dotR;
+  function init() {
+    dotR = Math.min(W, H) * 0.03;
+    const margin = 50;
+    dots = [];
+    for (let i = 0; i < COUNT; i++) {
+      dots.push({
+        x: margin + Math.random() * (W - margin * 2),
+        y: margin + 40 + Math.random() * (H - margin * 2 - 40)
+      });
+    }
+    lines = []; currentDot = 0;
+  }
+  init();
+  removeInput = onTap(pos => {
+    if (currentDot >= COUNT) return;
+    const d = dots[currentDot];
+    const dist = Math.sqrt((pos.x - d.x) ** 2 + (pos.y - d.y) ** 2);
+    if (dist < dotR * 3) {
+      lines.push(currentDot);
+      addScore(10);
+      currentDot++;
+      if (currentDot >= COUNT) addScore(timeLeft * 3);
+    }
+  });
+  function draw() {
+    clearCanvas();
+    drawText(`Dot ${currentDot + 1} of ${COUNT}`, W/2, 22, 15, DIM);
+    /* Lines */
+    ctx.strokeStyle = GOLD; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (let i = 0; i < lines.length; i++) {
+      const d = dots[lines[i]];
+      i === 0 ? ctx.moveTo(d.x, d.y) : ctx.lineTo(d.x, d.y);
+    }
+    if (lines.length > 0) ctx.stroke();
+    /* Dots */
+    dots.forEach((d, i) => {
+      const done = i < currentDot;
+      const next = i === currentDot;
+      const r = next ? dotR * 1.5 : dotR;
+      drawCircle(d.x, d.y, r, done ? GOLD : (next ? ACCENT : 'rgba(255,255,255,0.15)'), next ? GOLD : undefined);
+      drawText(String(i + 1), d.x, d.y, dotR * 1.2, done ? BG : (next ? '#fff' : DIM));
+    });
+    if (currentDot >= COUNT) {
+      ctx.strokeStyle = 'rgba(0,201,167,0.6)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(dots[lines[lines.length-1]].x, dots[lines[lines.length-1]].y);
+      ctx.lineTo(dots[0].x, dots[0].y); ctx.stroke();
+      drawText('Complete! ✓', W/2, H/2, 24, '#00C9A7');
+    }
+    animId = requestAnimationFrame(draw);
+  }
+  draw();
+};
+
+/* ---------- 6. COLOR MATCH (Stroop) ---------- */
+gameImpl.colormatch = function() {
+  const NAMES = ['RED','BLUE','GREEN','YELLOW'];
+  const COLS = ['#CF0A2C','#4B8BBE','#2ECC71','#F1C40F'];
+  let displayColor, displayWord, options, resultMsg = '', resultTime = 0;
+  function newRound() {
+    displayColor = Math.floor(Math.random() * 4);
+    let w = Math.floor(Math.random() * 4);
+    while (w === displayColor && Math.random() > 0.3) w = Math.floor(Math.random() * 4);
+    displayWord = w;
+    options = [0,1,2,3].sort(() => Math.random() - 0.5);
+    resultMsg = '';
+  }
+  newRound();
+  removeInput = onTap(pos => {
+    if (resultMsg) return;
+    const btnW = W * 0.38, btnH = 52, gap = 16;
+    const startX = (W - btnW * 2 - gap) / 2, startY = H * 0.55;
+    for (let i = 0; i < 4; i++) {
+      const col = i % 2, row = Math.floor(i / 2);
+      const x = startX + col * (btnW + gap), y = startY + row * (btnH + gap);
+      if (pos.x >= x && pos.x <= x + btnW && pos.y >= y && pos.y <= y + btnH) {
+        const chosen = options[i];
+        if (chosen === displayColor) { addScore(15); resultMsg = 'Correct!'; }
+        else { resultScore = -5; addScore(-5); resultMsg = 'Wrong!'; }
+        resultTime = performance.now();
+        setTimeout(newRound, 600);
+        return;
+      }
+    }
+  });
+  function draw(now) {
+    clearCanvas();
+    drawText('What COLOR is displayed?', W/2, 30, 14, DIM);
+    /* The word */
+    ctx.font = `bold ${Math.min(W * 0.15, 56)}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = COLS[displayWord];
+    ctx.fillText(NAMES[displayWord], W/2, H * 0.25);
+    /* Hint */
+    drawText('(Ignore the word meaning!)', W/2, H * 0.37, 11, 'rgba(255,255,255,0.2)');
+    /* Buttons */
+    const btnW = W * 0.38, btnH = 52, gap = 16;
+    const startX = (W - btnW * 2 - gap) / 2, startY = H * 0.55;
+    for (let i = 0; i < 4; i++) {
+      const col = i % 2, row = Math.floor(i / 2);
+      const x = startX + col * (btnW + gap), y = startY + row * (btnH + gap);
+      drawRoundRect(x, y, btnW, btnH, 10, COLS[options[i]]);
+      drawText(NAMES[options[i]], x + btnW/2, y + btnH/2, 15, '#fff');
+    }
+    if (resultMsg) {
+      const c = resultMsg === 'Correct!' ? '#00C9A7' : ACCENT;
+      drawText(resultMsg, W/2, H * 0.85, 22, c);
+    }
+    animId = requestAnimationFrame(draw);
+  }
+  draw();
+};
+
+/* ---------- 7. QUICK MATH ---------- */
+gameImpl.quickmath = function() {
+  let a, b, op, correctAnswer, options, resultMsg = '', answered = 0;
+  function gen() {
+    const ops = ['+', '-', '×'];
+    op = ops[Math.floor(Math.random() * 3)];
+    a = Math.floor(Math.random() * 15) + 1;
+    b = Math.floor(Math.random() * 12) + 1;
+    if (op === '-' && a < b) [a, b] = [b, a];
+    if (op === '+') correctAnswer = a + b;
+    else if (op === '-') correctAnswer = a - b;
+    else { a = Math.floor(Math.random() * 12) + 1; b = Math.floor(Math.random() * 12) + 1; correctAnswer = a * b; }
+    const answers = new Set([correctAnswer]);
+    while (answers.size < 4) {
+      let off = Math.floor(Math.random() * 10) - 5;
+      if (off === 0) off = Math.random() > 0.5 ? 1 : -1;
+      answers.add(correctAnswer + off);
+    }
+    options = [...answers].sort(() => Math.random() - 0.5);
+    resultMsg = '';
+  }
+  gen();
+  removeInput = onTap(pos => {
+    if (resultMsg) return;
+    const btnW = W * 0.38, btnH = 56, gap = 16;
+    const startX = (W - btnW * 2 - gap) / 2, startY = H * 0.45;
+    for (let i = 0; i < 4; i++) {
+      const col = i % 2, row = Math.floor(i / 2);
+      const x = startX + col * (btnW + gap), y = startY + row * (btnH + gap);
+      if (pos.x >= x && pos.x <= x + btnW && pos.y >= y && pos.y <= y + btnH) {
+        if (options[i] === correctAnswer) { addScore(10 + answered); resultMsg = '✓'; answered++; }
+        else { addScore(-5); resultMsg = '✗'; }
+        setTimeout(gen, 500);
+        return;
+      }
+    }
+  });
+  function draw() {
+    clearCanvas();
+    drawText(`Solved: ${answered}`, W/2, 25, 14, DIM);
+    const q = `${a} ${op} ${b} = ?`;
+    drawText(q, W/2, H * 0.22, Math.min(W * 0.1, 48), GOLD);
+    const btnW = W * 0.38, btnH = 56, gap = 16;
+    const startX = (W - btnW * 2 - gap) / 2, startY = H * 0.45;
+    for (let i = 0; i < 4; i++) {
+      const col = i % 2, row = Math.floor(i / 2);
+      const x = startX + col * (btnW + gap), y = startY + row * (btnH + gap);
+      drawRoundRect(x, y, btnW, btnH, 12, BG2, 'rgba(255,255,255,0.12)');
+      drawText(String(options[i]), x + btnW/2, y + btnH/2, 22, '#fff');
+    }
+    if (resultMsg) drawText(resultMsg, W/2, H * 0.82, 28, resultMsg === '✓' ? '#00C9A7' : ACCENT);
+    animId = requestAnimationFrame(draw);
+  }
+  draw();
+};
+
+/* ---------- 8. BUBBLE POP ---------- */
+gameImpl.bubblepop = function() {
+  let bubbles = [], spawnTimer = 0;
+  const COLORS3 = ['#CF0A2C','#FFD700','#00C9A7','#845EC2','#FF6F91','#4B8BBE'];
+  function spawn() {
+    const r = 18 + Math.random() * 22;
+    bubbles.push({
+      x: r + Math.random() * (W - r * 2),
+      y: H + r,
+      r, speed: 40 + Math.random() * 60,
+      color: COLORS3[Math.floor(Math.random() * COLORS3.length)],
+      wobble: Math.random() * Math.PI * 2,
+      popping: false, popT: 0
+    });
+  }
+  removeInput = onTap(pos => {
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      const b = bubbles[i];
+      if (b.popping) continue;
+      const dx = pos.x - b.x, dy = pos.y - b.y;
+      if (Math.sqrt(dx*dx+dy*dy) < b.r + 8) {
+        b.popping = true; b.popT = 0;
+        addScore(Math.round(30 - b.r));
+        return;
+      }
+    }
+  });
+  let last = performance.now();
+  function draw(now) {
+    const dt = (now - last) / 1000; last = now;
+    spawnTimer += dt;
+    const spawnRate = Math.max(0.25, 0.7 - score / 500);
+    if (spawnTimer > spawnRate) { spawn(); spawnTimer = 0; }
+    clearCanvas();
+    drawText('Pop the bubbles!', W/2, 20, 14, DIM);
+    bubbles = bubbles.filter(b => b.y + b.r > -20 && (!b.popping || b.popT < 1));
+    bubbles.forEach(b => {
+      if (b.popping) {
+        b.popT += dt * 4;
+        const s = 1 + b.popT;
+        ctx.globalAlpha = 1 - b.popT;
+        drawCircle(b.x, b.y, b.r * s, null, b.color);
+        ctx.globalAlpha = 1;
+      } else {
+        b.y -= b.speed * dt;
+        b.wobble += dt * 3;
+        b.x += Math.sin(b.wobble) * 0.8;
+        drawCircle(b.x, b.y, b.r, b.color + '44', b.color);
+        /* shine */
+        drawCircle(b.x - b.r * 0.25, b.y - b.r * 0.25, b.r * 0.2, 'rgba(255,255,255,0.3)');
+      }
+    });
+    animId = requestAnimationFrame(draw);
+  }
+  animId = requestAnimationFrame(draw);
+};
+
+/* ---------- 9. WORD SCRAMBLE ---------- */
+gameImpl.wordscramble = function() {
+  const WORDS = ['GENESIS','CANVAS','PIXEL','ENGINE','SCORE','QUEST','BRAIN','SWIFT','POWER','MAGIC','LIGHT','FLAME','STORM','BLAZE','NEXUS','FORGE','SPIRE','LUNAR','ORBIT','PULSE'];
+  let word, shuffled, selected = [], resultMsg = '', wordIdx = 0;
+  function shuffle(s) {
+    const a = s.split('');
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+    return a.join('');
+  }
+  function newWord() {
+    word = WORDS[wordIdx % WORDS.length]; wordIdx++;
+    shuffled = shuffle(word);
+    while (shuffled === word && word.length > 2) shuffled = shuffle(word);
+    selected = []; resultMsg = '';
+  }
+  newWord();
+  removeInput = onTap(pos => {
+    if (resultMsg) return;
+    const tileW = Math.min(50, (W - 40) / shuffled.length - 6);
+    const tileH = tileW * 1.1;
+    const gap = 6;
+    const totalW = shuffled.length * (tileW + gap) - gap;
+    const sx = (W - totalW) / 2;
+    const sy = H * 0.35;
+    /* Check letter tiles */
+    for (let i = 0; i < shuffled.length; i++) {
+      const x = sx + i * (tileW + gap);
+      if (selected.includes(i)) continue;
+      if (pos.x >= x && pos.x <= x + tileW && pos.y >= sy && pos.y <= sy + tileH) {
+        selected.push(i);
+        const guess = selected.map(j => shuffled[j]).join('');
+        if (selected.length === word.length) {
+          if (guess === word) { addScore(word.length * 10 + timeLeft * 2); resultMsg = 'Correct!'; setTimeout(newWord, 1000); }
+          else { addScore(-5); resultMsg = 'Wrong!'; setTimeout(() => { selected = []; resultMsg = ''; }, 800); }
+        }
+        return;
+      }
+    }
+    /* Check undo area (selected tiles) */
+    const uy = H * 0.55;
+    for (let i = 0; i < selected.length; i++) {
+      const x = sx + i * (tileW + gap);
+      if (pos.x >= x && pos.x <= x + tileW && pos.y >= uy && pos.y <= uy + tileH) {
+        selected.splice(i, 1); return;
+      }
+    }
+  });
+  function draw() {
+    clearCanvas();
+    drawText('Unscramble the word!', W/2, 30, 15, DIM);
+    /* Hint */
+    const hint = word[0] + '_'.repeat(word.length - 2) + word[word.length - 1];
+    drawText(`Hint: ${hint}`, W/2, H * 0.15, 14, 'rgba(255,255,255,0.25)');
+    const tileW = Math.min(50, (W - 40) / shuffled.length - 6);
+    const tileH = tileW * 1.1;
+    const gap = 6;
+    const totalW = shuffled.length * (tileW + gap) - gap;
+    const sx = (W - totalW) / 2;
+    /* Source tiles */
+    const sy = H * 0.35;
+    for (let i = 0; i < shuffled.length; i++) {
+      const x = sx + i * (tileW + gap);
+      const used = selected.includes(i);
+      drawRoundRect(x, sy, tileW, tileH, 8, used ? 'rgba(255,255,255,0.03)' : BG2, used ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.15)');
+      if (!used) drawText(shuffled[i], x + tileW/2, sy + tileH/2, tileW * 0.5, '#fff');
+    }
+    /* Selected tiles */
+    const uy = H * 0.55;
+    drawRoundRect(sx - 4, uy - 4, totalW + 8, tileH + 8, 10, 'rgba(207,10,44,0.08)', 'rgba(207,10,44,0.25)');
+    for (let i = 0; i < selected.length; i++) {
+      const x = sx + i * (tileW + gap);
+      drawRoundRect(x, uy, tileW, tileH, 8, ACCENT + '33', ACCENT);
+      drawText(shuffled[selected[i]], x + tileW/2, uy + tileH/2, tileW * 0.5, GOLD);
+    }
+    if (resultMsg) drawText(resultMsg, W/2, H * 0.78, 24, resultMsg === 'Correct!' ? '#00C9A7' : ACCENT);
+    animId = requestAnimationFrame(draw);
+  }
+  draw();
+};
+
+/* ---------- 10. CHASE LIGHT ---------- */
+gameImpl.chaselight = function() {
+  const COLS = 4, ROWS = 4;
+  let cellW, cellH, target, timeLimit, elapsed, hits = 0, showHit = false, hitPos = null;
+  function init() {
+    const gap = 8, topOff = 50;
+    cellW = (W - gap * (COLS + 1)) / COLS;
+    cellH = (H - topOff - gap * (ROWS + 1)) / ROWS;
+    moveTarget();
+  }
+  function moveTarget() {
+    target = { r: Math.floor(Math.random() * ROWS), c: Math.floor(Math.random() * COLS) };
+    timeLimit = Math.max(0.6, 1.5 - hits * 0.03);
+    elapsed = 0;
+  }
+  init();
+  removeInput = onTap(pos => {
+    const gap = 8, topOff = 50;
+    const c = Math.floor((pos.x - gap) / (cellW + gap));
+    const r = Math.floor((pos.y - topOff - gap) / (cellH + gap));
+    if (r === target.r && c === target.c) {
+      hits++; addScore(10 + Math.floor(hits / 3) * 5);
+      hitPos = { r, c }; showHit = true;
+      setTimeout(() => { showHit = false; }, 150);
+      moveTarget();
+    }
+  });
+  let last = performance.now();
+  function draw(now) {
+    const dt = (now - last) / 1000; last = now;
+    elapsed += dt;
+    if (elapsed >= timeLimit) { addScore(-3); moveTarget(); }
+    clearCanvas();
+    drawText(`Streak: ${hits}`, W/2, 22, 15, DIM);
+    const gap = 8, topOff = 50;
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const x = gap + c * (cellW + gap), y = topOff + gap + r * (cellH + gap);
+      const isTarget = r === target.r && c === target.c;
+      const wasHit = showHit && hitPos && r === hitPos.r && c === hitPos.c;
+      if (wasHit) {
+        drawRoundRect(x, y, cellW, cellH, 10, 'rgba(0,201,167,0.4)', '#00C9A7');
+      } else if (isTarget) {
+        const pulse = 0.7 + Math.sin(now * 0.008) * 0.3;
+        drawRoundRect(x, y, cellW, cellH, 10, `rgba(207,10,44,${pulse * 0.5})`, ACCENT);
+        /* Timer ring */
+        const cx = x + cellW/2, cy = y + cellH/2, rr = Math.min(cellW, cellH) * 0.35;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rr, -Math.PI/2, -Math.PI/2 + (1 - elapsed/timeLimit) * Math.PI * 2);
+        ctx.strokeStyle = GOLD; ctx.lineWidth = 3; ctx.stroke();
+      } else {
+        drawRoundRect(x, y, cellW, cellH, 10, 'rgba(255,255,255,0.03)', 'rgba(255,255,255,0.06)');
+      }
+    }
+    animId = requestAnimationFrame(draw);
+  }
+  animId = requestAnimationFrame(draw);
+};
+</script>
+</body>
+</html>

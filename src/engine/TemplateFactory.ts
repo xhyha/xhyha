@@ -4,13 +4,20 @@ import { RhythmTapGame } from '../templates/RhythmTapGame';
 import { MemoryFlipGame } from '../templates/MemoryFlipGame';
 import { BreathingGame } from '../templates/BreathingGame';
 import { DrawingGame } from '../templates/DrawingGame';
+import { ColorMatchGame } from '../templates/ColorMatchGame';
+import { QuickMathGame } from '../templates/QuickMathGame';
+import { BubblePopGame } from '../templates/BubblePopGame';
+import { WordScrambleGame } from '../templates/WordScrambleGame';
+import { ChaseLightGame } from '../templates/ChaseLightGame';
 
 /**
  * Factory for creating game template instances.
  * Maps GameType to concrete template implementations.
+ * Also supports name-based lookup for multiple templates sharing the same type.
  */
 export class TemplateFactory {
   private templates: Map<GameType, IGameTemplate> = new Map();
+  private templatesByName: Map<string, IGameTemplate> = new Map();
 
   constructor() {
     this.registerDefaults();
@@ -21,6 +28,7 @@ export class TemplateFactory {
    */
   register(type: GameType, template: IGameTemplate): void {
     this.templates.set(type, template);
+    this.templatesByName.set(template.name, template);
   }
 
   /**
@@ -31,10 +39,24 @@ export class TemplateFactory {
   }
 
   /**
+   * Get template by name (supports multiple templates per GameType)
+   */
+  getTemplateByName(name: string): IGameTemplate | null {
+    return this.templatesByName.get(name) ?? null;
+  }
+
+  /**
    * Get all registered game types
    */
   getRegisteredTypes(): GameType[] {
     return Array.from(this.templates.keys());
+  }
+
+  /**
+   * Get all registered template names
+   */
+  getRegisteredNames(): string[] {
+    return Array.from(this.templatesByName.keys());
   }
 
   /**
@@ -58,5 +80,12 @@ export class TemplateFactory {
     const memoryGame = new MemoryFlipGame();
     // Store as alternate puzzle template
     this.register(GameType.SENSES, memoryGame); // reuse SENSES slot for memory
+
+    // New game templates - registered by name via templatesByName
+    this.templatesByName.set('ColorMatch', new ColorMatchGame());
+    this.templatesByName.set('QuickMath', new QuickMathGame());
+    this.templatesByName.set('BubblePop', new BubblePopGame());
+    this.templatesByName.set('WordScramble', new WordScrambleGame());
+    this.templatesByName.set('ChaseLight', new ChaseLightGame());
   }
 }

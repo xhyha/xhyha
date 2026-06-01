@@ -20,3 +20,8 @@ export { RhythmTapGame } from './templates/RhythmTapGame';
 export { MemoryFlipGame } from './templates/MemoryFlipGame';
 export { BreathingGame } from './templates/BreathingGame';
 export { DrawingGame } from './templates/DrawingGame';
+export { ColorMatchGame } from './templates/ColorMatchGame';
+export { QuickMathGame } from './templates/QuickMathGame';
+export { BubblePopGame } from './templates/BubblePopGame';
+export { WordScrambleGame } from './templates/WordScrambleGame';
+export { ChaseLightGame } from './templates/ChaseLightGame';
