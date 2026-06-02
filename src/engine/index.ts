@@ -16,8 +16,8 @@ export { MonetizationEngine, CurrencyType, PremiumTier, AdType } from './Monetiz
 export type { IShopItem, ITransaction, IUserWallet, IAdPlacement, IRevenueSummary } from './MonetizationEngine';
 export { ExperimentEngine, ExperimentStatus, MetricType } from './ExperimentEngine';
 export type { IExperimentVariant, IMetricDefinition, IExperiment, IMetricPoint, ITargetingRule, IExperimentResult, IExperimentResultVariant, IExperimentMetricResult } from './ExperimentEngine';
-export { EmotionEngine, EmotionSource } from './EmotionAIEngine';
-export type { IEmotionReading, IBehaviorSnapshot, INarrativeNode, IEmotionHistoryEntry, IEmotionProfile } from './EmotionAIEngine';
+export { EmotionEngine, EmotionSource } from './EmotionEngine';
+export type { IEmotionProfile, IEmotionSignal, IBehaviorContext, IAdaptiveNarrative, IEmotionRecommendation } from './EmotionEngine';
 export { CloudSyncEngine, SyncStatus, ConflictStrategy } from './CloudSyncEngine';
 export type { ISyncData, ISyncPacket, ISyncResult, ISyncConflict, IDeviceRegistration } from './CloudSyncEngine';
 export { I18nEngine, Language, TextDirection } from './I18nEngine';
