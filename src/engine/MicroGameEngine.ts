@@ -1,5 +1,5 @@
 import {
-  IMicroGame, IGameConfig, IGameInput, IGameResult,
+  IMicroGame, IGameInput, IGameResult,
   ITriggerContext, IUserProfile, GameState, GenesisEvent,
   ITrigger,
 } from '../models/types';

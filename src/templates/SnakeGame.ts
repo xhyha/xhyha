@@ -112,11 +112,11 @@ export class SnakeGame extends BaseGameTemplate {
     return game;
   }
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.dead;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return GRID_SIZE * GRID_SIZE * 10;
   }
 

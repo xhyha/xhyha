@@ -169,7 +169,6 @@ export class BalloonPopGame extends BaseGameTemplate {
   private balloons: BalloonEntity[] = [];
   private correctCount = 0;
   private wrongCount = 0;
-  private spawnTimer = 0;
   private waitingForNext = false;
   private nextTimer = 0;
 
@@ -180,7 +179,6 @@ export class BalloonPopGame extends BaseGameTemplate {
     this.balloons = [];
     this.correctCount = 0;
     this.wrongCount = 0;
-    this.spawnTimer = 0;
     this.waitingForNext = false;
     this.nextTimer = 0;
 
@@ -285,7 +283,7 @@ export class BalloonPopGame extends BaseGameTemplate {
 
   // ---- Completion ----
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return false; // Only ends by timer (maxDuration)
   }
 

@@ -213,11 +213,11 @@ export class PatternMemoryGame extends BaseGameTemplate {
 
   // ---- Completion ----
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.finished;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.params.maxRounds * 15;
   }
 

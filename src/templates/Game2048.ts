@@ -67,11 +67,11 @@ export class Game2048 extends BaseGameTemplate {
     };
   }
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.won || this.gameOver;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.targetTile * 10;
   }
 

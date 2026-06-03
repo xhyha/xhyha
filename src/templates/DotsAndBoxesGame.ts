@@ -208,11 +208,11 @@ export class DotsAndBoxesGame extends BaseGameTemplate {
 
   // ---- Completion ----
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.gameOver;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.totalBoxes * 10 + 50; // boxes * 10 + completion bonus
   }
 

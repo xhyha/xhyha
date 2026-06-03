@@ -776,7 +776,7 @@ export class ExperimentEngine {
   /**
    * Check if a user matches the targeting rules for an experiment.
    */
-  checkTargeting(userId: string, profile: Record<string, unknown>, experimentId: string): boolean {
+  checkTargeting(_userId: string, profile: Record<string, unknown>, experimentId: string): boolean {
     const exp = this.experiments.get(experimentId);
     if (!exp) return false;
 

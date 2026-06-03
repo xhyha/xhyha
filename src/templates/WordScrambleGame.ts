@@ -100,11 +100,11 @@ export class WordScrambleGame extends BaseGameTemplate {
     return { ...game, entities };
   }
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.currentRound >= this.totalRounds;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.totalRounds * 60;
   }
 

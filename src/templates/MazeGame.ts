@@ -200,11 +200,11 @@ export class MazeGame extends BaseGameTemplate {
 
   // ---- Completion ----
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.solved;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return 100;
   }
 

@@ -131,13 +131,13 @@ export class WhackAMoleGame extends BaseGameTemplate {
     };
   }
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     // All moles have been spawned and all active moles have resolved
     return this.molesSpawned >= this.totalMoles &&
       this.holes.every(h => !h.active);
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.totalMoles * 10;
   }
 

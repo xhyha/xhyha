@@ -24,7 +24,6 @@ interface BrickEntity extends IGameEntity {
 
 const FIELD_WIDTH = 320;
 const FIELD_HEIGHT = 480;
-const BRICK_ROWS_MAX = 6;
 const BRICK_COLS = 8;
 const BRICK_HEIGHT = 18;
 const BRICK_TOP_OFFSET = 50;
@@ -207,11 +206,11 @@ export class BreakoutGame extends BaseGameTemplate {
     return { ...game, entities: this.buildEntities() };
   }
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.bricksRemaining <= 0 || this.lost;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.bricks.length * 10;
   }
 

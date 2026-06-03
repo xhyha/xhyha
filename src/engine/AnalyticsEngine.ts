@@ -4,8 +4,6 @@
  * Tracks user behavior, funnels, retention cohorts, and dashboard metrics.
  */
 
-import { GameType } from '../models/types';
-
 // ========== Enums ==========
 
 /** Analytics event types */
@@ -113,11 +111,7 @@ function getTimeOfDay(hour: number): string {
   return 'night';
 }
 
-function daysBetween(a: string, b: string): number {
-  const dA = new Date(a).getTime();
-  const dB = new Date(b).getTime();
-  return Math.floor(Math.abs(dB - dA) / (24 * 60 * 60 * 1000));
-}
+// daysBetween removed — not used in current implementation
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 

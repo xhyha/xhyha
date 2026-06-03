@@ -200,11 +200,11 @@ export class SimonSaysGame extends BaseGameTemplate {
 
   // ---- Completion ----
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.gameOver;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.params.maxLength * 20;
   }
 

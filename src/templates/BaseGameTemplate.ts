@@ -101,14 +101,14 @@ export abstract class BaseGameTemplate implements IGameTemplate {
   /**
    * Process input during gameplay - subclasses can override
    */
-  protected processInput(game: IMicroGame, input: IGameInput): IMicroGame {
+  protected processInput(game: IMicroGame, _input: IGameInput): IMicroGame {
     return game;
   }
 
   /**
    * Get maximum possible score - subclasses can override
    */
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return 1000;
   }
 

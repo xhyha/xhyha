@@ -127,7 +127,7 @@ export class EliminationGame extends BaseGameTemplate {
     return game.score >= this.targetScore || this.movesLeft <= 0;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.targetScore;
   }
 

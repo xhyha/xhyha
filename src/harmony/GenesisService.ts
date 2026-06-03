@@ -2,7 +2,7 @@ import { MicroGameEngine } from '../engine/MicroGameEngine';
 import { BuiltInTriggers } from '../triggers/BuiltInTriggers';
 import {
   IUserProfile, ITriggerContext, IMicroGame, IGameInput,
-  IGameResult, GameState, GenesisEvent,
+  IGameResult, GameState,
 } from '../models/types';
 import { UserProfileFactory } from '../models/UserProfile';
 import { TriggerContextFactory } from '../models/TriggerContext';

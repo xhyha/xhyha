@@ -140,11 +140,11 @@ export class MemoryFlipGame extends BaseGameTemplate {
     }
   }
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.pairsFound >= this.totalPairs;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.totalPairs * 100;
   }
 

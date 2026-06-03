@@ -115,7 +115,7 @@ export class BubblePopGame extends BaseGameTemplate {
       game.entities.every((e) => (e as Bubble).popped || (e as Bubble).escaped);
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.maxBubbles * 30;
   }
 

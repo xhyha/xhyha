@@ -198,8 +198,6 @@ export class TileSlideGame extends BaseGameTemplate {
     if (input.type !== 'tap') return game;
     if (this.solved) return game;
 
-    const n = this.params.size;
-
     // Find which tile was tapped
     const tile = this.findTileAt(input.position.x, input.position.y);
     if (!tile) return game;
@@ -229,7 +227,7 @@ export class TileSlideGame extends BaseGameTemplate {
 
   // ---- Completion ----
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     if (this.solved) return true;
     const n = this.params.size;
     let expected = 1;
@@ -247,7 +245,7 @@ export class TileSlideGame extends BaseGameTemplate {
     return true;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return 1000;
   }
 

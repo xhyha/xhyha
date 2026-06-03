@@ -1,6 +1,5 @@
 import {
   IGameConfig, IMicroGame, IGameInput, IGameEntity, GameType, Difficulty,
-  GameState,
 } from '../models/types';
 import { BaseGameTemplate } from './BaseGameTemplate';
 
@@ -95,11 +94,11 @@ export class DrawingGame extends BaseGameTemplate {
     }
   }
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.currentOrder >= this.totalDots;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.totalDots * 50; // Max if no mistakes
   }
 

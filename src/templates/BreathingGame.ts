@@ -126,7 +126,7 @@ export class BreathingGame extends BaseGameTemplate {
     return circle?.cycleCount >= this.targetCycles;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.targetCycles * 100;
   }
 

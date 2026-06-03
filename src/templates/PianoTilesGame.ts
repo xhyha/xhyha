@@ -36,7 +36,6 @@ const COLS = 4;
 const COL_WIDTH = 80;
 const TILE_HEIGHT = 120;
 const BOARD_X = 20;
-const BOARD_Y = 0;
 
 // ---------------------------------------------------------------------------
 // Difficulty parameters
@@ -188,7 +187,7 @@ export class PianoTilesGame extends BaseGameTemplate {
     return this.missed || game.elapsed >= game.config.maxDuration;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.params.maxTiles * 10;
   }
 

@@ -17,8 +17,8 @@ import { TriggerContextFactory } from './models/TriggerContext';
 import { UserProfileFactory } from './models/UserProfile';
 import { BuiltInTriggers } from './triggers/BuiltInTriggers';
 import {
-  GameState, GameType, Difficulty, TriggerCategory, EmotionState,
-  IUserProfile, ITriggerContext, IMicroGame,
+  GameState, Difficulty,
+  IUserProfile, ITriggerContext,
 } from './models/types';
 
 // ===== Console Helpers =====

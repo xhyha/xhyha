@@ -110,9 +110,7 @@ const TIER_RANK: Record<PremiumTier, number> = {
   [PremiumTier.PLATINUM]: 4,
 };
 
-function tierMeetsRequired(tier: PremiumTier, required: PremiumTier): boolean {
-  return TIER_RANK[tier] >= TIER_RANK[required];
-}
+// tierMeetsRequired removed — TIER_RANK is used directly where needed
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 

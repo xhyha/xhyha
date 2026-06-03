@@ -118,11 +118,11 @@ export class ColorMatchGame extends BaseGameTemplate {
     }
   }
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.currentRound >= this.totalRounds;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.totalRounds * 100;
   }
 

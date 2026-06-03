@@ -56,10 +56,6 @@ const LINES: [number, number, number, number, number, number][] = [
 // Helpers
 // ---------------------------------------------------------------------------
 
-function cloneBoard(board: CellValue[][]): CellValue[][] {
-  return board.map(row => [...row]);
-}
-
 function checkWinner(board: CellValue[][]): CellValue {
   for (const [r1, c1, r2, c2, r3, c3] of LINES) {
     const v = board[r1][c1];
@@ -167,7 +163,7 @@ export class TicTacToeGame extends BaseGameTemplate {
 
   // ---- Initialisation ----
 
-  protected initializeEntities(config: IGameConfig): IGameEntity[] {
+  protected initializeEntities(_config: IGameConfig): IGameEntity[] {
     this.board = Array.from({ length: GRID }, () => Array<CellValue>(GRID).fill(''));
     this.winner = '';
     this.moveCount = 0;
@@ -212,11 +208,11 @@ export class TicTacToeGame extends BaseGameTemplate {
 
   // ---- Completion ----
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.winner !== '' || isFull(this.board);
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return 150; // 100 win bonus + up to ~50 time bonus
   }
 
@@ -257,7 +253,7 @@ export class TicTacToeGame extends BaseGameTemplate {
     if (m) this.board[m.r][m.c] = 'O';
   }
 
-  private computeScore(game: IMicroGame): number {
+  private computeScore(_game: IMicroGame): number {
     if (this.winner === 'X') {
       // Win: 100 + bonus for fewer moves (faster win)
       const movesUsed = this.moveCount;

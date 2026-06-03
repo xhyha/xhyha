@@ -309,8 +309,8 @@ export class CloudSyncEngine {
         this.resolveConflict(c, ConflictStrategy.MERGE),
       );
 
-      // Merge data
-      const mergedData = this.mergeSyncData(localSyncData, cloudPacket.data);
+      // Merge data (merged data used via mergedPacket below)
+      this.mergeSyncData(localSyncData, cloudPacket.data);
       const mergedPacket = this.autoResolve(localPacket, cloudPacket);
 
       this.cloudData.set(userId, mergedPacket);

@@ -117,11 +117,11 @@ export class ChaseLightGame extends BaseGameTemplate {
     return game;
   }
 
-  isComplete(game: IMicroGame): boolean {
+  isComplete(_game: IMicroGame): boolean {
     return this.hits + this.misses >= this.totalTargets;
   }
 
-  protected getMaxScore(game: IMicroGame): number {
+  protected getMaxScore(_game: IMicroGame): number {
     return this.totalTargets * 30;
   }
 
