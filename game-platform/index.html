@@ -193,6 +193,11 @@ body{display:flex;flex-direction:column}
     <option value="puzzle">🧩 推箱子</option>
     <option value="fight">⚔️ 竞技场</option>
     <option value="collect">🍎 水果忍者</option>
+    <option value="flappy">🐦 飞鸟</option>
+    <option value="fortress">🏰 堡垒防守</option>
+    <option value="rpg">⚔️ RPG冒险</option>
+    <option value="racing">🏎️ 赛车</option>
+    <option value="target">🎯 打靶场</option>
   </select>
   <div class="header-sep"></div>
   <button class="hbtn hbtn-play" id="btnPlay" title="开始测试游戏">▶ 测试游戏</button>
@@ -2246,6 +2251,11 @@ function loadTemplate(name) {
     case 'puzzle': loadPuzzleTemplate(); break;
     case 'fight': loadFightTemplate(); break;
     case 'collect': loadCollectTemplate(); break;
+    case 'flappy': loadFlappyTemplate(); break;
+    case 'fortress': loadFortressTemplate(); break;
+    case 'rpg': loadRpgTemplate(); break;
+    case 'racing': loadRacingTemplate(); break;
+    case 'target': loadTargetTemplate(); break;
     default: return;
   }
 
@@ -2564,6 +2574,351 @@ function loadCollectTemplate() {
   createObject('enemy', 200, 300, { name: '追踪者', emoji: '💀', w: 24, h: 24, aiBehavior: 'chase', speed: 40, gravity: false, maxHealth: 999, health: 999 });
   createObject('healthPack', 700, 100, { name: '药水', healAmount: 30 });
   createObject('text', 280, 10, { w: 240, h: 28, name: '标题', text: '🍎 水果忍者', fontSize: 20, fontColor: '#2ecc71' });
+}
+
+// ===== NEW TEMPLATES v3 =====
+
+function loadFlappyTemplate() {
+  // Sky background
+  createObject('bgGradient', 0, 0, { color1: '#87CEEB', color2: '#E0F7FA', w: 800, h: 600, gradientDir: 'vertical', name: '天空' });
+
+  // Ground
+  createObject('platform', 0, 560, { w: 800, h: 40, color: '#8B4513', name: '地面' });
+
+  // Pipe obstacles (pairs of platforms with gaps)
+  // Pipe 1
+  createObject('platform', 180, 0, { w: 50, h: 220, color: '#2ecc71', name: '管道1上' });
+  createObject('platform', 180, 340, { w: 50, h: 220, color: '#2ecc71', name: '管道1下' });
+  // Pipe 2
+  createObject('platform', 340, 0, { w: 50, h: 160, color: '#27ae60', name: '管道2上' });
+  createObject('platform', 340, 280, { w: 50, h: 280, color: '#27ae60', name: '管道2下' });
+  // Pipe 3
+  createObject('platform', 500, 0, { w: 50, h: 300, color: '#2ecc71', name: '管道3上' });
+  createObject('platform', 500, 420, { w: 50, h: 140, color: '#2ecc71', name: '管道3下' });
+  // Pipe 4
+  createObject('platform', 650, 0, { w: 50, h: 130, color: '#27ae60', name: '管道4上' });
+  createObject('platform', 650, 250, { w: 50, h: 310, color: '#27ae60', name: '管道4下' });
+
+  // Player bird
+  const player = createObject('player', 80, 280, { name: '小鸟', emoji: '🐦', w: 30, h: 26, speed: 0, jumpForce: 320, maxHealth: 100, health: 100, controllable: true });
+  player.events = [];
+
+  // Ceiling (invisible kill zone)
+  createObject('spike', 0, 536, { w: 800, h: 24, damage: 0, name: '地面尖刺' });
+
+  // Coins between pipes
+  createObject('coin', 200, 280, { name: '金币1', scoreValue: 10 });
+  createObject('coin', 360, 220, { name: '金币2', scoreValue: 10 });
+  createObject('coin', 520, 360, { name: '金币3', scoreValue: 10 });
+  createObject('coin', 670, 190, { name: '金币4', scoreValue: 10 });
+
+  // Collectibles for bonus
+  createObject('collectible', 450, 150, { name: '星星1', scoreValue: 25 });
+  createObject('collectible', 600, 450, { name: '星星2', scoreValue: 25 });
+
+  // Portal at end
+  createObject('portal', 740, 490, { name: '终点', w: 40, h: 40, targetX: 740, targetY: 490, winGame: true });
+
+  // Text
+  createObject('text', 10, 10, { w: 280, h: 28, name: '标题', text: '🐦 飞鸟 - 按空格/上跳跃!', fontSize: 18, fontColor: '#e67e22' });
+}
+
+function loadFortressTemplate() {
+  // Dark fortress background
+  createObject('bgGradient', 0, 0, { color1: '#1a0a0a', color2: '#2a1a1a', w: 800, h: 600, gradientDir: 'radial', name: '战场' });
+
+  // Fortress walls (outer)
+  createObject('wall', 250, 200, { w: 300, h: 20, color: '#8B7355', name: '堡垒上墙' });
+  createObject('wall', 250, 400, { w: 300, h: 20, color: '#8B7355', name: '堡垒下墙' });
+  createObject('wall', 250, 200, { w: 20, h: 220, color: '#8B7355', name: '堡垒左墙' });
+  createObject('wall', 530, 200, { w: 20, h: 220, color: '#8B7355', name: '堡垒右墙' });
+  // Fortress gate opening (bottom)
+  createObject('platform', 350, 400, { w: 100, h: 20, color: '#A0896C', name: '门桥' });
+
+  // Corner towers (walls)
+  createObject('wall', 230, 180, { w: 40, h: 40, color: '#6B5B3A', name: '左塔' });
+  createObject('wall', 530, 180, { w: 40, h: 40, color: '#6B5B3A', name: '右塔' });
+
+  // Interior platforms (defensive positions)
+  createObject('platform', 290, 280, { w: 80, h: 16, color: '#7A6B4E', name: '内平台1' });
+  createObject('platform', 430, 280, { w: 80, h: 16, color: '#7A6B4E', name: '内平台2' });
+
+  // Player (defender)
+  const player = createObject('player', 380, 350, { name: '守卫', emoji: '🛡️', w: 32, h: 32, speed: 180, jumpForce: 350, maxHealth: 200, health: 200 });
+  player.events = [
+    { trigger: 'keyPress', triggerParams: { key: 'shoot' }, actions: [
+      { type: 'spawn', params: { objectType: 'projectile' } },
+      { type: 'playSound', params: { sound: 'shoot' } }
+    ]}
+  ];
+
+  // Attackers (outside fortress)
+  createObject('enemy', 60, 100, { name: '攻城兵1', emoji: '👹', w: 32, h: 32, aiBehavior: 'chase', speed: 60, maxHealth: 60, health: 60, gravity: false });
+  createObject('enemy', 740, 100, { name: '攻城兵2', emoji: '👹', w: 32, h: 32, aiBehavior: 'chase', speed: 55, maxHealth: 60, health: 60, gravity: false });
+  createObject('enemy', 60, 500, { name: '攻城兵3', emoji: '👺', w: 30, h: 30, aiBehavior: 'chase', speed: 70, maxHealth: 40, health: 40, gravity: false });
+  createObject('enemy', 740, 500, { name: '攻城兵4', emoji: '👺', w: 30, h: 30, aiBehavior: 'chase', speed: 65, maxHealth: 40, health: 40, gravity: false });
+  createObject('enemy', 400, 50, { name: '精英兵', emoji: '💀', w: 36, h: 36, aiBehavior: 'chase', speed: 45, maxHealth: 100, health: 100, gravity: false });
+  createObject('enemy', 100, 300, { name: '弓箭手1', emoji: '🏹', w: 28, h: 28, aiBehavior: 'patrol', patrolRange: 100, speed: 80, maxHealth: 30, health: 30, gravity: false });
+  createObject('enemy', 700, 300, { name: '弓箭手2', emoji: '🏹', w: 28, h: 28, aiBehavior: 'patrol', patrolRange: 100, speed: 80, maxHealth: 30, health: 30, gravity: false });
+
+  // Supplies inside fortress
+  createObject('healthPack', 380, 380, { name: '补给包1', healAmount: 50 });
+  createObject('healthPack', 300, 380, { name: '补给包2', healAmount: 30 });
+  createObject('healthPack', 470, 380, { name: '补给包3', healAmount: 30 });
+
+  // Treasure outside (risky rewards)
+  createObject('collectible', 50, 300, { name: '宝箱1', scoreValue: 30 });
+  createObject('collectible', 750, 300, { name: '宝箱2', scoreValue: 30 });
+  createObject('coin', 400, 550, { name: '金币', scoreValue: 10 });
+  createObject('coin', 200, 50, { name: '金币', scoreValue: 10 });
+  createObject('coin', 600, 50, { name: '金币', scoreValue: 10 });
+
+  // Text
+  createObject('text', 260, 170, { w: 280, h: 24, name: '提示', text: '🏰 守住堡垒! 消灭所有敌人!', fontSize: 16, fontColor: '#f39c12' });
+}
+
+function loadRpgTemplate() {
+  // RPG world background
+  createObject('bgGradient', 0, 0, { color1: '#0d1b0e', color2: '#1a3a1e', w: 800, h: 600, gradientDir: 'vertical', name: '世界' });
+
+  // ===== Room 1: Starting Village (top-left) =====
+  createObject('wall', 20, 20, { w: 300, h: 16, color: '#5a4a2a', name: '村上墙' });
+  createObject('wall', 20, 220, { w: 140, h: 16, color: '#5a4a2a', name: '村下墙左' });
+  createObject('wall', 200, 220, { w: 120, h: 16, color: '#5a4a2a', name: '村下墙右' });
+  createObject('wall', 20, 20, { w: 16, h: 216, color: '#5a4a2a', name: '村左墙' });
+  createObject('wall', 304, 20, { w: 16, h: 80, color: '#5a4a2a', name: '村右墙上' });
+  createObject('wall', 304, 160, { w: 16, h: 76, color: '#5a4a2a', name: '村右墙下' });
+
+  // ===== Corridor (connects Room 1 to Room 2) =====
+  createObject('wall', 304, 80, { w: 100, h: 16, color: '#4a3a1a', name: '走廊上' });
+  createObject('wall', 304, 160, { w: 100, h: 16, color: '#4a3a1a', name: '走廊下' });
+
+  // ===== Room 2: Forest (top-right) =====
+  createObject('wall', 388, 80, { w: 16, h: 80, color: '#2a5a2a', name: '林左墙' });
+  createObject('wall', 388, 80, { w: 392, h: 16, color: '#2a5a2a', name: '林上墙' });
+  createObject('wall', 764, 20, { w: 16, h: 76, color: '#2a5a2a', name: '林右墙上' });
+  createObject('wall', 764, 20, { w: 16, h: 140, color: '#2a5a2a', name: '林右墙' });
+  createObject('wall', 500, 220, { w: 280, h: 16, color: '#2a5a2a', name: '林下墙' });
+  // Inner forest walls
+  createObject('wall', 500, 100, { w: 16, h: 80, color: '#3a6a3a', name: '树1' });
+  createObject('wall', 620, 120, { w: 16, h: 60, color: '#3a6a3a', name: '树2' });
+  createObject('wall', 700, 100, { w: 16, h: 80, color: '#3a6a3a', name: '树3' });
+
+  // ===== Room 3: Cave (bottom-left) =====
+  createObject('wall', 20, 280, { w: 16, h: 300, color: '#3a3a4a', name: '洞左墙' });
+  createObject('wall', 20, 280, { w: 300, h: 16, color: '#3a3a4a', name: '洞上墙' });
+  createObject('wall', 304, 280, { w: 16, h: 120, color: '#3a3a4a', name: '洞右墙上' });
+  createObject('wall', 304, 460, { w: 16, h: 120, color: '#3a3a4a', name: '洞右墙下' });
+  createObject('wall', 20, 564, { w: 300, h: 16, color: '#3a3a4a', name: '洞下墙' });
+  // Cave inner obstacles
+  createObject('wall', 100, 360, { w: 60, h: 16, color: '#4a4a5a', name: '石1' });
+  createObject('wall', 200, 440, { w: 16, h: 60, color: '#4a4a5a', name: '石2' });
+  createObject('wall', 120, 500, { w: 80, h: 16, color: '#4a4a5a', name: '石3' });
+
+  // ===== Room 4: Boss Chamber (bottom-right) =====
+  createObject('wall', 500, 280, { w: 280, h: 16, color: '#5a1a1a', name: '王上墙' });
+  createObject('wall', 500, 280, { w: 16, h: 120, color: '#5a1a1a', name: '王左墙上' });
+  createObject('wall', 500, 460, { w: 16, h: 120, color: '#5a1a1a', name: '王左墙下' });
+  createObject('wall', 764, 280, { w: 16, h: 300, color: '#5a1a1a', name: '王右墙' });
+  createObject('wall', 500, 564, { w: 280, h: 16, color: '#5a1a1a', name: '王下墙' });
+
+  // Corridor Room3 -> Room4
+  createObject('wall', 320, 380, { w: 180, h: 16, color: '#4a2a1a', name: '下走廊上' });
+  createObject('wall', 320, 460, { w: 180, h: 16, color: '#4a2a1a', name: '下走廊下' });
+
+  // Corridor Room2 -> Room4
+  createObject('wall', 640, 236, { w: 16, h: 44, color: '#4a2a1a', name: '右走廊左' });
+
+  // Player (hero)
+  const player = createObject('player', 60, 120, { name: '勇者', emoji: '🦸', w: 28, h: 28, speed: 160, jumpForce: 0, gravity: false, maxHealth: 150, health: 150 });
+  player.events = [
+    { trigger: 'keyPress', triggerParams: { key: 'shoot' }, actions: [
+      { type: 'spawn', params: { objectType: 'projectile' } },
+      { type: 'playSound', params: { sound: 'shoot' } }
+    ]}
+  ];
+
+  // Projectile template
+  createObject('projectile', 80, 140, { name: '魔法弹', w: 10, h: 10, direction: 'right', speed: 350, damage: 40, lifetime: 2 });
+
+  // NPCs (text objects as "people")
+  createObject('text', 80, 60, { w: 200, h: 20, name: 'NPC村长', text: '👤 村长: 勇者，请消灭魔王!', fontSize: 13, fontColor: '#f1c40f' });
+  createObject('text', 450, 100, { w: 180, h: 20, name: 'NPC猎人', text: '👤 猎人: 小心森林怪物!', fontSize: 13, fontColor: '#2ecc71' });
+  createObject('text', 80, 320, { w: 200, h: 20, name: 'NPC矿工', text: '👤 矿工: 洞穴里有宝物!', fontSize: 13, fontColor: '#3498db' });
+
+  // Keys
+  createObject('key', 550, 150, { name: '森林钥匙', keyId: 'forest' });
+  createObject('key', 200, 480, { name: '洞穴钥匙', keyId: 'cave' });
+
+  // Enemies in forest
+  createObject('enemy', 460, 150, { name: '树精', emoji: '🌳', w: 28, h: 28, aiBehavior: 'patrol', patrolRange: 60, speed: 40, gravity: false, maxHealth: 40, health: 40 });
+  createObject('enemy', 580, 180, { name: '狼', emoji: '🐺', w: 26, h: 26, aiBehavior: 'chase', speed: 55, gravity: false, maxHealth: 35, health: 35 });
+  createObject('enemy', 700, 150, { name: '树精2', emoji: '🌳', w: 28, h: 28, aiBehavior: 'patrol', patrolRange: 80, speed: 50, gravity: false, maxHealth: 40, health: 40 });
+
+  // Enemies in cave
+  createObject('enemy', 160, 400, { name: '蝙蝠', emoji: '🦇', w: 24, h: 24, aiBehavior: 'patrol', patrolRange: 100, speed: 70, gravity: false, maxHealth: 25, health: 25 });
+  createObject('enemy', 250, 500, { name: '蜘蛛', emoji: '🕷️', w: 24, h: 24, aiBehavior: 'chase', speed: 45, gravity: false, maxHealth: 30, health: 30 });
+  createObject('enemy', 100, 530, { name: '蝙蝠2', emoji: '🦇', w: 24, h: 24, aiBehavior: 'patrol', patrolRange: 80, speed: 65, gravity: false, maxHealth: 25, health: 25 });
+
+  // BOSS in room 4
+  createObject('enemy', 640, 420, { name: '魔王', emoji: '😈', w: 44, h: 44, aiBehavior: 'chase', speed: 35, gravity: false, maxHealth: 200, health: 200, damage: 25 });
+  createObject('enemy', 560, 340, { name: '守卫1', emoji: '👹', w: 28, h: 28, aiBehavior: 'patrol', patrolRange: 60, speed: 50, gravity: false, maxHealth: 50, health: 50 });
+  createObject('enemy', 720, 340, { name: '守卫2', emoji: '👹', w: 28, h: 28, aiBehavior: 'patrol', patrolRange: 60, speed: 50, gravity: false, maxHealth: 50, health: 50 });
+
+  // Collectibles
+  createObject('collectible', 150, 160, { name: '村宝石', scoreValue: 15 });
+  createObject('coin', 200, 100, { name: '金币1', scoreValue: 5 });
+  createObject('coin', 260, 160, { name: '金币2', scoreValue: 5 });
+  createObject('coin', 550, 170, { name: '金币3', scoreValue: 5 });
+  createObject('coin', 700, 170, { name: '金币4', scoreValue: 5 });
+  createObject('collectible', 250, 530, { name: '洞宝石', scoreValue: 20 });
+  createObject('coin', 80, 500, { name: '金币5', scoreValue: 5 });
+
+  // Health packs
+  createObject('healthPack', 380, 120, { name: '森林药水', healAmount: 40 });
+  createObject('healthPack', 180, 450, { name: '洞穴药水', healAmount: 30 });
+  createObject('healthPack', 400, 400, { name: '走廊药水', healAmount: 30 });
+
+  // Boss room treasure
+  createObject('collectible', 640, 530, { name: '王冠', scoreValue: 100 });
+
+  // Win portal in boss room
+  createObject('portal', 680, 510, { name: '胜利之门', w: 40, h: 40, targetX: 680, targetY: 510, winGame: true });
+
+  // Text labels
+  createObject('text', 120, 30, { w: 100, h: 18, name: '村标签', text: '🏘️ 起始村', fontSize: 14, fontColor: '#f1c40f' });
+  createObject('text', 560, 60, { w: 100, h: 18, name: '林标签', text: '🌲 暗森林', fontSize: 14, fontColor: '#2ecc71' });
+  createObject('text', 120, 290, { w: 100, h: 18, name: '洞标签', text: '🕳️ 矿洞', fontSize: 14, fontColor: '#3498db' });
+  createObject('text', 590, 290, { w: 100, h: 18, name: '王标签', text: '🔥 魔王殿', fontSize: 14, fontColor: '#e94560' });
+}
+
+function loadRacingTemplate() {
+  // Racing background
+  createObject('bgGradient', 0, 0, { color1: '#1a1a2e', color2: '#16213e', w: 800, h: 600, gradientDir: 'vertical', name: '赛道' });
+
+  // Track boundaries (form an oval-ish track)
+  // Outer walls
+  createObject('wall', 40, 20, { w: 720, h: 16, color: '#e94560', name: '外上墙' });
+  createObject('wall', 40, 564, { w: 720, h: 16, color: '#e94560', name: '外下墙' });
+  createObject('wall', 24, 20, { w: 16, h: 560, color: '#e94560', name: '外左墙' });
+  createObject('wall', 760, 20, { w: 16, h: 560, color: '#e94560', name: '外右墙' });
+
+  // Inner walls (track center island)
+  createObject('wall', 180, 150, { w: 440, h: 16, color: '#f39c12', name: '内上墙' });
+  createObject('wall', 180, 434, { w: 440, h: 16, color: '#f39c12', name: '内下墙' });
+  createObject('wall', 164, 150, { w: 16, h: 300, color: '#f39c12', name: '内左墙' });
+  createObject('wall', 620, 150, { w: 16, h: 300, color: '#f39c12', name: '内右墙' });
+
+  // Lane dividers (platforms as visual guides, thin)
+  createObject('platform', 100, 200, { w: 60, h: 6, color: '#444', name: '标记1' });
+  createObject('platform', 100, 400, { w: 60, h: 6, color: '#444', name: '标记2' });
+  createObject('platform', 640, 200, { w: 60, h: 6, color: '#444', name: '标记3' });
+  createObject('platform', 640, 400, { w: 60, h: 6, color: '#444', name: '标记4' });
+
+  // Player car
+  const player = createObject('player', 100, 80, { name: '赛车', emoji: '🏎️', w: 30, h: 36, speed: 220, jumpForce: 0, gravity: false, controllable: true, maxHealth: 100, health: 100 });
+  player.events = [];
+
+  // Obstacle cars (enemy vehicles patrolling)
+  createObject('enemy', 100, 100, { name: '对手1', emoji: '🚗', w: 28, h: 32, aiBehavior: 'patrol', patrolRange: 120, speed: 120, gravity: false, maxHealth: 999, health: 999 });
+  createObject('enemy', 680, 500, { name: '对手2', emoji: '🚙', w: 28, h: 32, aiBehavior: 'patrol', patrolRange: 100, speed: 100, gravity: false, maxHealth: 999, health: 999 });
+  createObject('enemy', 680, 100, { name: '对手3', emoji: '🚕', w: 28, h: 32, aiBehavior: 'patrol', patrolRange: 140, speed: 130, gravity: false, maxHealth: 999, health: 999 });
+  createObject('enemy', 100, 500, { name: '对手4', emoji: '🚌', w: 32, h: 36, aiBehavior: 'patrol', patrolRange: 80, speed: 80, gravity: false, maxHealth: 999, health: 999 });
+
+  // Speed boost collectibles on track
+  createObject('collectible', 100, 300, { name: '加速1', scoreValue: 20 });
+  createObject('collectible', 700, 300, { name: '加速2', scoreValue: 20 });
+  createObject('collectible', 400, 80, { name: '加速3', scoreValue: 20 });
+  createObject('collectible', 400, 520, { name: '加速4', scoreValue: 20 });
+
+  // Checkpoint coins
+  createObject('coin', 60, 200, { name: '检查点1', scoreValue: 10 });
+  createObject('coin', 60, 400, { name: '检查点2', scoreValue: 10 });
+  createObject('coin', 740, 200, { name: '检查点3', scoreValue: 10 });
+  createObject('coin', 740, 400, { name: '检查点4', scoreValue: 10 });
+  createObject('coin', 300, 60, { name: '检查点5', scoreValue: 10 });
+  createObject('coin', 500, 60, { name: '检查点6', scoreValue: 10 });
+  createObject('coin', 300, 540, { name: '检查点7', scoreValue: 10 });
+  createObject('coin', 500, 540, { name: '检查点8', scoreValue: 10 });
+
+  // Health pack
+  createObject('healthPack', 400, 300, { name: '修理包', healAmount: 40 });
+
+  // Win portal
+  createObject('portal', 700, 80, { name: '终点线', w: 36, h: 36, targetX: 700, targetY: 80, winGame: true });
+
+  // Spike hazards (oil slick)
+  createObject('spike', 300, 130, { w: 30, h: 20, damage: 15, name: '油渍1' });
+  createObject('spike', 500, 470, { w: 30, h: 20, damage: 15, name: '油渍2' });
+  createObject('spike', 150, 300, { w: 30, h: 20, damage: 15, name: '油渍3' });
+  createObject('spike', 630, 300, { w: 30, h: 20, damage: 15, name: '油渍4' });
+
+  // Text
+  createObject('text', 300, 290, { w: 200, h: 20, name: '中央标签', text: '🏎️ 绕赛道行驶!', fontSize: 14, fontColor: '#f39c12' });
+  createObject('text', 10, 10, { w: 200, h: 24, name: '标题', text: '🏁 收集检查点，到达终点!', fontSize: 14, fontColor: '#3498db' });
+}
+
+function loadTargetTemplate() {
+  // Shooting range background
+  createObject('bgGradient', 0, 0, { color1: '#1a1a0a', color2: '#2a2a1a', w: 800, h: 600, gradientDir: 'vertical', name: '靶场' });
+
+  // Range walls
+  createObject('wall', 0, 0, { w: 800, h: 16, color: '#4a3a2a', name: '上墙' });
+  createObject('wall', 0, 584, { w: 800, h: 16, color: '#4a3a2a', name: '下墙' });
+  createObject('wall', 0, 0, { w: 16, h: 600, color: '#4a3a2a', name: '左墙' });
+  createObject('wall', 784, 0, { w: 16, h: 600, color: '#4a3a2a', name: '右墙' });
+
+  // Shooting lane dividers
+  createObject('wall', 200, 400, { w: 16, h: 184, color: '#5a4a3a', name: '隔板1' });
+  createObject('wall', 400, 400, { w: 16, h: 184, color: '#5a4a3a', name: '隔板2' });
+  createObject('wall', 600, 400, { w: 16, h: 184, color: '#5a4a3a', name: '隔板3' });
+
+  // Player (shooter at bottom center)
+  const player = createObject('player', 380, 540, { name: '射手', emoji: '🔫', w: 30, h: 30, speed: 200, jumpForce: 0, gravity: false, controllable: true, maxHealth: 100, health: 100 });
+  player.events = [
+    { trigger: 'keyPress', triggerParams: { key: 'shoot' }, actions: [
+      { type: 'spawn', params: { objectType: 'projectile' } },
+      { type: 'playSound', params: { sound: 'shoot' } }
+    ]}
+  ];
+
+  // Projectile template
+  createObject('projectile', 390, 520, { name: '子弹', w: 6, h: 12, direction: 'up', speed: 500, damage: 35, lifetime: 3 });
+
+  // Targets (enemies as moving targets) - Row 1 (top, fast)
+  createObject('enemy', 80, 60, { name: '靶A1', emoji: '🎯', w: 36, h: 36, aiBehavior: 'patrol', patrolRange: 80, speed: 120, gravity: false, maxHealth: 30, health: 30 });
+  createObject('enemy', 280, 60, { name: '靶A2', emoji: '🎯', w: 36, h: 36, aiBehavior: 'patrol', patrolRange: 100, speed: 100, gravity: false, maxHealth: 30, health: 30 });
+  createObject('enemy', 480, 60, { name: '靶A3', emoji: '🎯', w: 36, h: 36, aiBehavior: 'patrol', patrolRange: 90, speed: 110, gravity: false, maxHealth: 30, health: 30 });
+  createObject('enemy', 680, 60, { name: '靶A4', emoji: '🎯', w: 36, h: 36, aiBehavior: 'patrol', patrolRange: 70, speed: 130, gravity: false, maxHealth: 30, health: 30 });
+
+  // Row 2 (medium, medium speed)
+  createObject('enemy', 100, 160, { name: '靶B1', emoji: '🔴', w: 30, h: 30, aiBehavior: 'patrol', patrolRange: 100, speed: 80, gravity: false, maxHealth: 50, health: 50 });
+  createObject('enemy', 350, 160, { name: '靶B2', emoji: '🔴', w: 30, h: 30, aiBehavior: 'patrol', patrolRange: 120, speed: 70, gravity: false, maxHealth: 50, health: 50 });
+  createObject('enemy', 600, 160, { name: '靶B3', emoji: '🔴', w: 30, h: 30, aiBehavior: 'patrol', patrolRange: 90, speed: 90, gravity: false, maxHealth: 50, health: 50 });
+
+  // Row 3 (hard, slow but tough)
+  createObject('enemy', 200, 280, { name: '靶C1', emoji: '⭐', w: 28, h: 28, aiBehavior: 'patrol', patrolRange: 130, speed: 60, gravity: false, maxHealth: 80, health: 80 });
+  createObject('enemy', 500, 280, { name: '靶C2', emoji: '⭐', w: 28, h: 28, aiBehavior: 'patrol', patrolRange: 140, speed: 55, gravity: false, maxHealth: 80, health: 80 });
+
+  // Bonus targets (small, fast, high value)
+  createObject('enemy', 400, 370, { name: '金靶', emoji: '🏆', w: 22, h: 22, aiBehavior: 'patrol', patrolRange: 180, speed: 150, gravity: false, maxHealth: 20, health: 20 });
+
+  // Score collectibles (bonus rings)
+  createObject('collectible', 100, 120, { name: '奖分环1', scoreValue: 25 });
+  createObject('collectible', 700, 120, { name: '奖分环2', scoreValue: 25 });
+  createObject('collectible', 400, 50, { name: '奖分环3', scoreValue: 50 });
+
+  // Health
+  createObject('healthPack', 60, 540, { name: '急救包', healAmount: 30 });
+  createObject('healthPack', 720, 540, { name: '急救包2', healAmount: 30 });
+
+  // Enemy projectiles (danger from targets)
+  createObject('spike', 250, 450, { w: 40, h: 20, damage: 10, name: '危险区1' });
+  createObject('spike', 550, 450, { w: 40, h: 20, damage: 10, name: '危险区2' });
+
+  // Text
+  createObject('text', 280, 10, { w: 240, h: 28, name: '标题', text: '🎯 打靶场 - 消灭所有靶子!', fontSize: 18, fontColor: '#f1c40f' });
+  createObject('text', 60, 500, { w: 120, h: 18, name: '提示1', text: 'WASD移动 | F射击', fontSize: 12, fontColor: '#aaa' });
 }
 
 // ===== BUTTON EVENTS =====
