@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GameForge Zero - 零代码游戏创作平台</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg-primary:#1a1a2e;--bg-secondary:#16213e;--bg-tertiary:#0f3460;--accent:#e94560;--accent-hover:#ff6b81;--text-primary:#eaeaea;--text-secondary:#a0a0b8;--text-muted:#6c6c8a;--border:rgba(255,255,255,0.08);--glass:rgba(26,26,46,0.85);--glass-border:rgba(255,255,255,0.12);--success:#2ecc71;--warning:#f39c12;--info:#3498db;--shadow:0 8px 32px rgba(0,0,0,0.3);--radius:8px;--transition:all 0.2s ease}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary)}
+body{display:flex;flex-direction:column}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-secondary)}
+
+/* ===== HEADER ===== */
+.header{height:48px;background:var(--bg-secondary);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;z-index:100;flex-shrink:0}
+.logo{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--accent),#ff8a5c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px;white-space:nowrap}
+.logo span{font-weight:400;opacity:0.7;-webkit-text-fill-color:var(--text-secondary)}
+.header-sep{width:1px;height:24px;background:var(--border);flex-shrink:0}
+.template-select{background:var(--bg-tertiary);border:1px solid var(--border);color:var(--text-primary);padding:5px 10px;border-radius:var(--radius);font-size:13px;cursor:pointer;outline:none;min-width:140px}
+.template-select:hover{border-color:var(--accent)}
+.hbtn{padding:6px 14px;border:none;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;transition:var(--transition);display:flex;align-items:center;gap:5px}
+.hbtn-play{background:var(--success);color:#fff}
+.hbtn-play:hover{background:#27ae60;transform:scale(1.03)}
+.hbtn-stop{background:var(--accent);color:#fff}
+.hbtn-stop:hover{background:#c0392b}
+.hbtn-save{background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border)}
+.hbtn-save:hover{border-color:var(--info);color:var(--info)}
+.hbtn-share{background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border)}
+.hbtn-share:hover{border-color:var(--warning);color:var(--warning)}
+.hbtn-load{background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border)}
+.hbtn-load:hover{border-color:var(--success);color:var(--success)}
+.header-spacer{flex:1}
+.header-status{font-size:11px;color:var(--text-muted)}
+
+/* ===== MAIN LAYOUT ===== */
+.main{flex:1;display:flex;overflow:hidden;position:relative}
+
+/* ===== LEFT SIDEBAR ===== */
+.sidebar-left{width:240px;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.sidebar-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:12px 14px 6px}
+.palette-categories{flex:1;overflow-y:auto;padding:4px 8px 12px}
+.pal-cat{margin-bottom:8px}
+.pal-cat-header{font-size:11px;font-weight:600;color:var(--text-secondary);padding:6px 8px;cursor:pointer;display:flex;align-items:center;gap:6px;border-radius:4px;transition:var(--transition)}
+.pal-cat-header:hover{background:rgba(255,255,255,0.05)}
+.pal-cat-header .arrow{transition:transform 0.2s;font-size:9px}
+.pal-cat-header.collapsed .arrow{transform:rotate(-90deg)}
+.pal-cat-items{display:flex;flex-wrap:wrap;gap:4px;padding:4px 0 4px 4px}
+.pal-cat-items.hidden{display:none}
+.pal-item{width:48px;height:48px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:grab;transition:var(--transition);font-size:20px;position:relative;user-select:none}
+.pal-item:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 12px rgba(233,69,96,0.2)}
+.pal-item:active{cursor:grabbing;transform:scale(0.95)}
+.pal-item .pal-label{font-size:7px;color:var(--text-muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44px;text-align:center}
+.pal-item.dragging{opacity:0.5}
+
+/* ===== CENTER CANVAS ===== */
+.canvas-area{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.canvas-container{flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;background:var(--bg-primary);position:relative}
+#gameCanvas{border:2px solid var(--border);border-radius:4px;cursor:crosshair;image-rendering:pixelated;position:relative;z-index:1}
+.canvas-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;pointer-events:none}
+#dropHighlight{position:absolute;border:2px dashed var(--accent);border-radius:4px;background:rgba(233,69,96,0.1);pointer-events:none;z-index:5;display:none}
+
+/* ===== RIGHT SIDEBAR ===== */
+.sidebar-right{width:280px;background:var(--bg-secondary);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.right-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.right-tab{flex:1;padding:10px;text-align:center;font-size:12px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:var(--transition);border-bottom:2px solid transparent}
+.right-tab:hover{color:var(--text-primary)}
+.right-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.right-content{flex:1;overflow-y:auto;padding:12px}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.no-selection{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px}
+.no-selection .icon{font-size:36px;margin-bottom:12px;opacity:0.3}
+
+/* Properties */
+.prop-group{margin-bottom:14px}
+.prop-group-title{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.prop-row{display:flex;align-items:center;margin-bottom:6px;gap:6px}
+.prop-label{font-size:11px;color:var(--text-secondary);min-width:50px;flex-shrink:0}
+.prop-input{flex:1;background:var(--bg-tertiary);border:1px solid var(--border);color:var(--text-primary);padding:5px 8px;border-radius:4px;font-size:12px;outline:none;transition:var(--transition)}
+.prop-input:focus{border-color:var(--accent)}
+.prop-input[type="number"]{width:60px;flex:none}
+.prop-input-sm{width:60px!important;flex:none}
+.prop-color{width:32px;height:28px;border:1px solid var(--border);border-radius:4px;cursor:pointer;padding:1px;background:var(--bg-tertiary)}
+.prop-select{flex:1;background:var(--bg-tertiary);border:1px solid var(--border);color:var(--text-primary);padding:5px 8px;border-radius:4px;font-size:12px;outline:none;cursor:pointer}
+.prop-select:focus{border-color:var(--accent)}
+.prop-checkbox{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);cursor:pointer}
+.prop-checkbox input{accent-color:var(--accent)}
+.prop-btn-delete{width:100%;padding:8px;background:rgba(233,69,96,0.15);border:1px solid rgba(233,69,96,0.3);color:var(--accent);border-radius:4px;font-size:12px;cursor:pointer;transition:var(--transition);margin-top:8px}
+.prop-btn-delete:hover{background:var(--accent);color:#fff}
+
+/* Events */
+.event-block{background:var(--bg-tertiary);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;transition:var(--transition)}
+.event-block:hover{border-color:var(--glass-border)}
+.event-block-header{padding:8px 10px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer}
+.event-block-header .ev-icon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.event-block-header .ev-title{flex:1}
+.event-block-header .ev-remove{width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:3px;font-size:14px;color:var(--text-muted);cursor:pointer;transition:var(--transition)}
+.event-block-header .ev-remove:hover{background:var(--accent);color:#fff}
+.event-block-body{padding:6px 10px 10px;border-top:1px solid var(--border)}
+.event-block-body .prop-row{margin-bottom:4px}
+.event-trigger{background:rgba(52,152,219,0.15);border-left:3px solid var(--info)}
+.event-trigger .event-block-header{color:var(--info)}
+.event-action{background:rgba(46,204,113,0.1);border-left:3px solid var(--success)}
+.event-action .event-block-header{color:var(--success)}
+.add-event-btn{width:100%;padding:8px;background:transparent;border:1px dashed var(--border);color:var(--text-muted);border-radius:var(--radius);font-size:12px;cursor:pointer;transition:var(--transition);display:flex;align-items:center;justify-content:center;gap:4px}
+.add-event-btn:hover{border-color:var(--accent);color:var(--accent)}
+.add-event-menu{background:var(--bg-tertiary);border:1px solid var(--border);border-radius:var(--radius);padding:4px;margin-bottom:8px;box-shadow:var(--shadow)}
+.add-event-menu.hidden{display:none}
+.add-event-opt{padding:6px 10px;font-size:12px;color:var(--text-secondary);cursor:pointer;border-radius:4px;transition:var(--transition);display:flex;align-items:center;gap:6px}
+.add-event-opt:hover{background:rgba(255,255,255,0.05);color:var(--text-primary)}
+.add-event-opt .opt-icon{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ===== BOTTOM BAR ===== */
+.bottom-bar{height:36px;background:var(--bg-secondary);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:12px;flex-shrink:0}
+.layers-btn{padding:4px 10px;background:var(--bg-tertiary);border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;font-size:11px;cursor:pointer;transition:var(--transition)}
+.layers-btn:hover{border-color:var(--accent);color:var(--text-primary)}
+.layers-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.zoom-controls{display:flex;align-items:center;gap:4px;margin-left:auto}
+.zoom-btn{width:26px;height:26px;background:var(--bg-tertiary);border:1px solid var(--border);color:var(--text-secondary);border-radius:4px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+.zoom-btn:hover{color:var(--text-primary);border-color:var(--accent)}
+.zoom-val{font-size:11px;color:var(--text-muted);min-width:40px;text-align:center}
+.bottom-bar .object-count{font-size:11px;color:var(--text-muted)}
+
+/* ===== PLAY MODE OVERLAY ===== */
+.play-hud{position:absolute;top:0;left:0;right:0;z-index:50;display:none;pointer-events:none}
+.play-hud.visible{display:flex;justify-content:space-between;padding:8px 16px}
+.hud-item{background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;pointer-events:auto}
+.hud-score{color:#f1c40f}
+.hud-health{color:var(--accent)}
+.hud-timer{color:var(--info)}
+.hud-stop{background:var(--accent);color:#fff;cursor:pointer;pointer-events:auto}
+.hud-stop:hover{background:var(--accent-hover)}
+
+.game-overlay{position:absolute;top:0;left:0;width:100%;height:100%;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px)}
+.game-overlay.visible{display:flex}
+.game-overlay-box{background:var(--bg-secondary);border:1px solid var(--border);border-radius:16px;padding:40px 60px;text-align:center;box-shadow:var(--shadow)}
+.game-overlay-box h2{font-size:28px;margin-bottom:8px}
+.game-overlay-box p{color:var(--text-secondary);margin-bottom:20px;font-size:14px}
+.game-overlay-box .ov-btn{padding:10px 24px;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;transition:var(--transition);margin:0 4px}
+.game-overlay-box .ov-btn-primary{background:var(--accent);color:#fff}
+.game-overlay-box .ov-btn-primary:hover{background:var(--accent-hover)}
+.game-overlay-box .ov-btn-secondary{background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border)}
+.game-overlay-box .ov-btn-secondary:hover{border-color:var(--info)}
+
+/* ===== TOAST ===== */
+.toast-container{position:fixed;top:60px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:10px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;box-shadow:var(--shadow);animation:toastIn 0.3s ease;backdrop-filter:blur(8px)}
+.toast-success{background:rgba(46,204,113,0.9);color:#fff}
+.toast-error{background:rgba(233,69,96,0.9);color:#fff}
+.toast-info{background:rgba(52,152,219,0.9);color:#fff}
+@keyframes toastIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toastOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100px);opacity:0}}
+
+/* ===== DRAG GHOST ===== */
+.drag-ghost{position:fixed;z-index:1000;pointer-events:none;opacity:0.8;font-size:32px;transform:translate(-50%,-50%)}
+.resize-handle{position:absolute;width:8px;height:8px;background:var(--accent);border:1px solid #fff;border-radius:50%;z-index:20;cursor:pointer}
+.resize-handle.nw{top:-4px;left:-4px;cursor:nw-resize}
+.resize-handle.ne{top:-4px;right:-4px;cursor:ne-resize}
+.resize-handle.sw{bottom:-4px;left:-4px;cursor:sw-resize}
+.resize-handle.se{bottom:-4px;right:-4px;cursor:se-resize}
+.selection-box{position:absolute;border:1.5px solid var(--accent);background:rgba(233,69,96,0.05);pointer-events:none;z-index:15}
+
+/* ===== ANIMATIONS ===== */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+.playing .header{background:linear-gradient(90deg,var(--bg-secondary),rgba(46,204,113,0.15),var(--bg-secondary))}
+.playing .logo{-webkit-text-fill-color:var(--success)}
+</style>
+</head>
+<body>
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">GameForge<span> Zero</span></div>
+  <div class="header-sep"></div>
+  <select class="template-select" id="templateSelect">
+    <option value="">-- 选择模板 --</option>
+    <option value="platform">🎮 平台跳跃</option>
+    <option value="shooter">🚀 太空射击</option>
+    <option value="maze">🏰 迷宫探索</option>
+    <option value="breakout">🧱 打砖块</option>
+  </select>
+  <div class="header-sep"></div>
+  <button class="hbtn hbtn-play" id="btnPlay" title="开始测试游戏">▶ 测试游戏</button>
+  <button class="hbtn hbtn-stop" id="btnStop" style="display:none" title="停止测试">⬛ 停止</button>
+  <div class="header-spacer"></div>
+  <span class="header-status" id="statusText">就绪</span>
+  <div class="header-sep"></div>
+  <button class="hbtn hbtn-save" id="btnSave" title="保存项目">💾 保存</button>
+  <button class="hbtn hbtn-load" id="btnLoad" title="加载项目">📂 加载</button>
+  <button class="hbtn hbtn-share" id="btnShare" title="分享链接">🔗 分享</button>
+</div>
+
+<!-- MAIN AREA -->
+<div class="main">
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar-left">
+    <div class="sidebar-title">对象面板</div>
+    <div class="palette-categories" id="paletteCategories"></div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="canvas-area">
+    <div class="canvas-container" id="canvasContainer">
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+      <div id="dropHighlight"></div>
+      <!-- Play HUD -->
+      <div class="play-hud" id="playHud">
+        <div class="hud-item hud-score">⭐ <span id="hudScore">0</span></div>
+        <div class="hud-item hud-health">❤️ <span id="hudHealth">100</span></div>
+        <div class="hud-item hud-timer">⏱️ <span id="hudTimer">0</span>s</div>
+        <div class="hud-item hud-stop" id="hudStop">⬛ 停止</div>
+      </div>
+      <!-- Game Over Overlay -->
+      <div class="game-overlay" id="gameOverlay">
+        <div class="game-overlay-box">
+          <h2 id="overlayTitle">游戏结束</h2>
+          <p id="overlayMsg">你的分数: 0</p>
+          <button class="ov-btn ov-btn-primary" id="overlayRestart">重新开始</button>
+          <button class="ov-btn ov-btn-secondary" id="overlayBack">返回编辑</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="bottom-bar">
+      <span class="object-count" id="objectCount">对象: 0</span>
+      <button class="layers-btn active" data-layer="all">全部</button>
+      <div class="header-sep"></div>
+      <span style="font-size:11px;color:var(--text-muted)">图层:</span>
+      <span id="layerList" style="font-size:11px;color:var(--text-secondary)">-</span>
+      <div class="zoom-controls">
+        <button class="zoom-btn" id="zoomOut">−</button>
+        <span class="zoom-val" id="zoomVal">100%</span>
+        <button class="zoom-btn" id="zoomIn">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar-right">
+    <div class="right-tabs">
+      <div class="right-tab active" data-tab="properties">📋 属性</div>
+      <div class="right-tab" data-tab="events">⚡ 事件</div>
+    </div>
+    <div class="right-content">
+      <div class="tab-panel active" id="tabProperties">
+        <div class="no-selection" id="noSelection">
+          <div class="icon">🎯</div>
+          <p>在画布上选择一个对象<br>以编辑其属性</p>
+        </div>
+        <div id="propsPanel" style="display:none"></div>
+      </div>
+      <div class="tab-panel" id="tabEvents">
+        <div class="no-selection" id="noSelectionEvents">
+          <div class="icon">⚡</div>
+          <p>选择一个对象<br>以编辑其事件</p>
+        </div>
+        <div id="eventsPanel" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WELCOME MODAL -->
+<div class="welcome-overlay" id="welcomeModal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center">
+  <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:20px;padding:48px 56px;max-width:620px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+    <div style="font-size:48px;margin-bottom:16px">🎮</div>
+    <h2 style="font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--accent),#ff8a5c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px">GameForge Zero</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px">零代码游戏创作平台 — 无需编程，拖拽即可创建游戏</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;margin-bottom:28px">
+      <div style="background:var(--bg-tertiary);padding:14px;border-radius:10px;border:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:600;color:var(--accent);margin-bottom:4px">🖱️ 拖拽创建</div>
+        <div style="font-size:11px;color:var(--text-muted)">从左侧面板拖拽对象到画布，或双击添加</div>
+      </div>
+      <div style="background:var(--bg-tertiary);padding:14px;border-radius:10px;border:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:600;color:var(--info)">⚡ 可视化事件</div>
+        <div style="font-size:11px;color:var(--text-muted)">右侧面板配置触发器与动作，无需写代码</div>
+      </div>
+      <div style="background:var(--bg-tertiary);padding:14px;border-radius:10px;border:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:600;color:var(--success)">🎮 即时测试</div>
+        <div style="font-size:11px;color:var(--text-muted)">点击测试按钮立即运行你的游戏</div>
+      </div>
+      <div style="background:var(--bg-tertiary);padding:14px;border-radius:10px;border:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:600;color:var(--warning)">📋 模板起步</div>
+        <div style="font-size:11px;color:var(--text-muted)">选择预设模板快速开始创作</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:20px">
+      ⌨️ 快捷键: <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Ctrl+S</kbd> 保存 &nbsp;
+      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Delete</kbd> 删除 &nbsp;
+      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Esc</kbd> 取消选择 &nbsp;
+      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Ctrl+D</kbd> 复制
+    </div>
+    <button id="welcomeStart" style="padding:14px 48px;background:linear-gradient(135deg,var(--accent),#ff6b81);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 20px rgba(233,69,96,0.4)">🚀 开始创作</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+<!-- DRAG GHOST -->
+<div class="drag-ghost" id="dragGhost" style="display:none"></div>
+
+<script>
+/* ==========================================================
+   GameForge Zero - Complete Zero-Code Game Creation Platform
+   ========================================================== */
+
+// ===== UTILITY =====
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const uid = () => 'obj_' + Math.random().toString(36).substr(2, 9);
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+function toast(msg, type='info') {
+  const container = $('#toastContainer');
+  // Limit toasts during gameplay
+  if (state.playing && container.children.length >= 2) return;
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  // Auto-remove older toasts if too many
+  while (container.children.length > 3) container.firstChild.remove();
+  setTimeout(() => { el.style.animation = 'toastOut 0.3s ease forwards'; setTimeout(() => el.remove(), 300); }, 1500);
+}
+
+// ===== AUDIO ENGINE =====
+class AudioEngine {
+  constructor() {
+    this.ctx = null;
+  }
+  init() {
+    if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  play(type) {
+    this.init();
+    const ctx = this.ctx;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const t = ctx.currentTime;
+    switch(type) {
+      case 'jump':
+        osc.type = 'square'; osc.frequency.setValueAtTime(300, t);
+        osc.frequency.exponentialRampToValueAtTime(600, t + 0.1);
+        gain.gain.setValueAtTime(0.15, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+        osc.start(t); osc.stop(t + 0.15); break;
+      case 'collect':
+        osc.type = 'sine'; osc.frequency.setValueAtTime(523, t);
+        osc.frequency.setValueAtTime(659, t + 0.08);
+        osc.frequency.setValueAtTime(784, t + 0.16);
+        gain.gain.setValueAtTime(0.2, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+        osc.start(t); osc.stop(t + 0.3); break;
+      case 'hit':
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, t);
+        osc.frequency.exponentialRampToValueAtTime(50, t + 0.2);
+        gain.gain.setValueAtTime(0.2, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+        osc.start(t); osc.stop(t + 0.25); break;
+      case 'shoot':
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(800, t);
+        osc.frequency.exponentialRampToValueAtTime(200, t + 0.12);
+        gain.gain.setValueAtTime(0.15, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+        osc.start(t); osc.stop(t + 0.12); break;
+      case 'win':
+        osc.type = 'sine';
+        [523,659,784,1047].forEach((f, i) => { osc.frequency.setValueAtTime(f, t + i * 0.15); });
+        gain.gain.setValueAtTime(0.2, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.7);
+        osc.start(t); osc.stop(t + 0.7); break;
+      case 'lose':
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(400, t);
+        osc.frequency.exponentialRampToValueAtTime(100, t + 0.5);
+        gain.gain.setValueAtTime(0.2, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
+        osc.start(t); osc.stop(t + 0.6); break;
+      case 'portal':
+        osc.type = 'sine'; osc.frequency.setValueAtTime(440, t);
+        osc.frequency.exponentialRampToValueAtTime(880, t + 0.2);
+        osc.frequency.exponentialRampToValueAtTime(1320, t + 0.4);
+        gain.gain.setValueAtTime(0.15, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
+        osc.start(t); osc.stop(t + 0.5); break;
+      default:
+        osc.type = 'sine'; osc.frequency.setValueAtTime(440, t);
+        gain.gain.setValueAtTime(0.1, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+        osc.start(t); osc.stop(t + 0.1);
+    }
+  }
+}
+const audio = new AudioEngine();
+
+// ===== PARTICLE SYSTEM =====
+const particles = [];
+function spawnParticles(x, y, color, count = 6) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 50 + Math.random() * 150;
+    particles.push({
+      x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 50,
+      life: 0.4 + Math.random() * 0.3, maxLife: 0.7,
+      color, size: 2 + Math.random() * 3
+    });
+  }
+}
+function updateParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += 200 * dt;
+    p.life -= dt;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+function renderParticles() {
+  particles.forEach(p => {
+    ctx.save();
+    ctx.globalAlpha = clamp(p.life / p.maxLife, 0, 1);
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
+// ===== SCREEN SHAKE =====
+let shakeAmount = 0;
+let shakeTimer = 0;
+function screenShake(amount) {
+  shakeAmount = amount;
+  shakeTimer = 0.2;
+}
+
+// ===== OBJECT TYPE DEFINITIONS =====
+const OBJ_TYPES = {
+  player: { name: '玩家', emoji: '🏃', category: 'characters', w: 40, h: 48, props: { health: 100, speed: 200, jumpForce: 400, gravity: true, controllable: true } },
+  enemy: { name: '敌人', emoji: '👾', category: 'characters', w: 40, h: 40, props: { health: 50, speed: 80, aiBehavior: 'patrol', patrolRange: 120, gravity: true } },
+  platform: { name: '平台', emoji: '🟫', category: 'obstacles', w: 120, h: 24, props: { color: '#6b4f36', moving: false, moveRange: 100, moveSpeed: 60, moveAxis: 'x' } },
+  wall: { name: '墙壁', emoji: '🧱', category: 'obstacles', w: 40, h: 40, props: { color: '#888888' } },
+  spike: { name: '尖刺', emoji: '🔺', category: 'obstacles', w: 32, h: 32, props: { damage: 25 } },
+  collectible: { name: '收集品', emoji: '⭐', category: 'items', w: 28, h: 28, props: { scoreValue: 10, animation: 'float' } },
+  coin: { name: '金币', emoji: '🪙', category: 'items', w: 24, h: 24, props: { scoreValue: 5, animation: 'spin' } },
+  key: { name: '钥匙', emoji: '🔑', category: 'items', w: 24, h: 28, props: { keyId: 'key1' } },
+  healthPack: { name: '生命包', emoji: '💊', category: 'items', w: 26, h: 26, props: { healAmount: 25 } },
+  portal: { name: '传送门', emoji: '🌀', category: 'items', w: 44, h: 44, props: { targetX: 400, targetY: 100, winGame: false } },
+  text: { name: '文字', emoji: '📝', category: 'ui', w: 120, h: 30, props: { text: '分数: 0', fontSize: 18, fontColor: '#ffffff', displayType: 'static' } },
+  button: { name: '按钮', emoji: '🔘', category: 'ui', w: 100, h: 40, props: { text: '按钮', color: '#3498db' } },
+  projectile: { name: '子弹', emoji: '🔥', category: 'items', w: 16, h: 16, props: { speed: 350, direction: 'up', damage: 25, lifetime: 3 } },
+  bgGradient: { name: '渐变背景', emoji: '🌅', category: 'backgrounds', w: 800, h: 600, props: { color1: '#0f0c29', color2: '#302b63', gradientDir: 'vertical', parallax: false } },
+  bgSolid: { name: '纯色背景', emoji: '⬛', category: 'backgrounds', w: 800, h: 600, props: { color: '#1a1a2e' } }
+};
+
+const PALETTE_CATEGORIES = [
+  { id: 'characters', name: '👤 角色', items: ['player', 'enemy'] },
+  { id: 'obstacles', name: '🧱 障碍', items: ['platform', 'wall', 'spike'] },
+  { id: 'items', name: '⭐ 物品', items: ['collectible', 'coin', 'key', 'healthPack', 'portal', 'projectile'] },
+  { id: 'ui', name: '🖥️ 界面', items: ['text', 'button'] },
+  { id: 'backgrounds', name: '🌄 背景', items: ['bgGradient', 'bgSolid'] }
+];
+
+// ===== EVENT SYSTEM DEFINITIONS =====
+const EVENT_TRIGGERS = {
+  gameStart: { name: '🎮 游戏开始', color: '#3498db' },
+  keyPress: { name: '⌨️ 按键按下', color: '#9b59b6' },
+  collision: { name: '💥 碰撞发生', color: '#e94560' },
+  timer: { name: '⏱️ 定时器', color: '#f39c12' },
+  onClick: { name: '👆 点击对象', color: '#2ecc71' }
+};
+
+const EVENT_ACTIONS = {
+  move: { name: '➡️ 移动', color: '#2ecc71' },
+  jump: { name: '⬆️ 跳跃', color: '#3498db' },
+  playSound: { name: '🔊 播放音效', color: '#9b59b6' },
+  addScore: { name: '⭐ 增加分数', color: '#f1c40f' },
+  destroy: { name: '💥 销毁对象', color: '#e94560' },
+  spawn: { name: '✨ 生成对象', color: '#1abc9c' },
+  winGame: { name: '🏆 游戏胜利', color: '#f39c12' },
+  loseGame: { name: '💀 游戏失败', color: '#e94560' },
+  changeColor: { name: '🎨 改变颜色', color: '#e67e22' },
+  showText: { name: '💬 显示文字', color: '#3498db' },
+  setVelocity: { name: '🚀 设置速度', color: '#2ecc71' },
+  takeDamage: { name: '💔 造成伤害', color: '#e94560' },
+  heal: { name: '💚 恢复生命', color: '#2ecc71' },
+  teleport: { name: '🌀 传送', color: '#9b59b6' }
+};
+
+// ===== GAME STATE =====
+const state = {
+  objects: [],
+  selectedIds: [],
+  playing: false,
+  zoom: 1,
+  score: 0,
+  health: 100,
+  timer: 0,
+  panX: 0, panY: 0,
+  nextId: 1,
+  copiedData: null,
+  undoStack: [],
+  gridSize: 20
+};
+
+// ===== CANVAS & RENDERING =====
+const canvas = $('#gameCanvas');
+const ctx = canvas.getContext('2d');
+let animFrame = null;
+let lastTime = 0;
+
+function createObject(type, x, y, extraProps = {}) {
+  const def = OBJ_TYPES[type];
+  if (!def) return null;
+  const obj = {
+    id: uid(),
+    type,
+    name: def.name + '_' + (state.nextId++),
+    x: (x !== undefined && x !== null) ? x : 100,
+    y: (y !== undefined && y !== null) ? y : 100,
+    w: def.w,
+    h: def.h,
+    emoji: def.emoji,
+    color: def.props.color || '#888888',
+    visible: true,
+    locked: false,
+    // Physics
+    vx: 0, vy: 0,
+    gravity: def.props.gravity || false,
+    bounce: 0,
+    friction: 0.8,
+    // Type-specific
+    health: def.props.health || 0,
+    maxHealth: def.props.health || 100,
+    speed: def.props.speed || 0,
+    jumpForce: def.props.jumpForce || 0,
+    controllable: def.props.controllable || false,
+    aiBehavior: def.props.aiBehavior || 'none',
+    patrolRange: def.props.patrolRange || 100,
+    patrolOrigin: (x !== undefined && x !== null) ? x : 100,
+    moving: def.props.moving || false,
+    moveRange: def.props.moveRange || 100,
+    moveSpeed: def.props.moveSpeed || 60,
+    moveAxis: def.props.moveAxis || 'x',
+    movePhase: 0,
+    damage: def.props.damage || 0,
+    scoreValue: def.props.scoreValue || 0,
+    targetX: def.props.targetX || 0,
+    targetY: def.props.targetY || 0,
+    winGame: def.props.winGame || false,
+    text: def.props.text || '',
+    fontSize: def.props.fontSize || 18,
+    fontColor: def.props.fontColor || '#ffffff',
+    displayType: def.props.displayType || 'static',
+    direction: def.props.direction || 'up',
+    lifetime: def.props.lifetime || 3,
+    color1: def.props.color1 || '#0f0c29',
+    color2: def.props.color2 || '#302b63',
+    gradientDir: def.props.gradientDir || 'vertical',
+    parallax: def.props.parallax || false,
+    keyId: def.props.keyId || '',
+    healAmount: def.props.healAmount || 0,
+    animation: def.props.animation || '',
+    btnText: def.props.text || '按钮',
+    // Runtime
+    grounded: false,
+    alive: true,
+    collected: false,
+    invincibleTimer: 0,
+    events: [],
+    ...extraProps
+  };
+  state.objects.push(obj);
+  updateObjectCount();
+  return obj;
+}
+
+function deleteObject(id) {
+  state.objects = state.objects.filter(o => o.id !== id);
+  state.selectedIds = state.selectedIds.filter(sid => sid !== id);
+  updateObjectCount();
+  updatePropsPanel();
+}
+
+function findObj(id) { return state.objects.find(o => o.id === id); }
+
+function getPlayer() { return state.objects.find(o => o.type === 'player' && o.alive); }
+
+// ===== DRAW GRID =====
+function drawGrid() {
+  const g = state.gridSize;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= canvas.width; x += g) {
+    ctx.beginPath(); ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, canvas.height); ctx.stroke();
+  }
+  for (let y = 0; y <= canvas.height; y += g) {
+    ctx.beginPath(); ctx.moveTo(0, y + 0.5); ctx.lineTo(canvas.width, y + 0.5); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ===== DRAW OBJECT =====
+function drawObject(obj, isEditor) {
+  if (!obj.visible) return;
+  // Invincibility blink
+  if (!isEditor && obj.invincibleTimer > 0 && Math.floor(obj.invincibleTimer * 10) % 2 === 0) {
+    ctx.globalAlpha = 0.3;
+  }
+  const { x, y, w, h, emoji, type, color } = obj;
+  ctx.save();
+
+  // Background objects
+  if (type === 'bgGradient') {
+    let grad;
+    if (obj.gradientDir === 'vertical') grad = ctx.createLinearGradient(x, y, x, y + h);
+    else if (obj.gradientDir === 'horizontal') grad = ctx.createLinearGradient(x, y, x + w, y);
+    else grad = ctx.createRadialGradient(x + w/2, y + h/2, 0, x + w/2, y + h/2, Math.max(w, h)/2);
+    grad.addColorStop(0, obj.color1);
+    grad.addColorStop(1, obj.color2);
+    ctx.fillStyle = grad;
+    ctx.fillRect(x, y, w, h);
+    ctx.restore();
+    return;
+  }
+  if (type === 'bgSolid') {
+    ctx.fillStyle = obj.color;
+    ctx.fillRect(x, y, w, h);
+    ctx.restore();
+    return;
+  }
+
+  // Platform/Wall
+  if (type === 'platform' || type === 'wall') {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+    // Top highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.fillRect(x, y, w, 3);
+    // Grid pattern
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    for (let gx = x; gx < x + w; gx += 20) {
+      ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx, y + h); ctx.stroke();
+    }
+  }
+
+  // Spike
+  if (type === 'spike') {
+    ctx.fillStyle = '#e94560';
+    ctx.beginPath();
+    ctx.moveTo(x + w/2, y);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x, y + h);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Text
+  if (type === 'text') {
+    ctx.font = `bold ${obj.fontSize}px sans-serif`;
+    ctx.fillStyle = obj.fontColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(obj.text || '文字', x + w/2, y + h/2);
+    if (isEditor) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.strokeRect(x, y, w, h);
+      ctx.setLineDash([]);
+    }
+    ctx.restore();
+    return;
+  }
+
+  // Button
+  if (type === 'button') {
+    ctx.fillStyle = obj.color;
+    const r = 6;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r);
+    ctx.arcTo(x, y, x + r, y, r);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(obj.btnText || '按钮', x + w/2, y + h/2);
+    ctx.restore();
+    return;
+  }
+
+  // Emoji-based objects
+  if (emoji) {
+    // Colored bounding box (for editor clarity)
+    if (isEditor) {
+      ctx.fillStyle = color + '33';
+      ctx.strokeStyle = color + '88';
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeRect(x, y, w, h);
+    }
+    // Floating animation for collectibles
+    let dy = 0;
+    if (!isEditor && (type === 'collectible' || type === 'coin') && obj.animation) {
+      dy = Math.sin(Date.now() / 300 + obj.x) * 4;
+    }
+    // Portal animation
+    let scale = 1;
+    if (type === 'portal') {
+      scale = 0.9 + Math.sin(Date.now() / 200) * 0.1;
+    }
+    const fontSize = Math.min(w, h) * 0.8;
+    ctx.font = `${fontSize}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(emoji, x + w/2, y + h/2 + dy);
+
+    // Health bar for player/enemy
+    if ((type === 'player' || type === 'enemy') && obj.health > 0) {
+      const barW = w;
+      const barH = 4;
+      const barY = y - 8;
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(x, barY, barW, barH);
+      const pct = obj.health / obj.maxHealth;
+      ctx.fillStyle = pct > 0.5 ? '#2ecc71' : pct > 0.25 ? '#f39c12' : '#e94560';
+      ctx.fillRect(x, barY, barW * pct, barH);
+    }
+  }
+
+  // Selection highlight
+  if (isEditor && state.selectedIds.includes(obj.id)) {
+    ctx.strokeStyle = '#e94560';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 3]);
+    ctx.strokeRect(x - 2, y - 2, w + 4, h + 4);
+    ctx.setLineDash([]);
+    // Resize handles
+    const handles = [[x - 4, y - 4], [x + w - 4, y - 4], [x - 4, y + h - 4], [x + w - 4, y + h - 4]];
+    ctx.fillStyle = '#e94560';
+    handles.forEach(([hx, hy]) => {
+      ctx.fillRect(hx, hy, 8, 8);
+    });
+  }
+
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// ===== EDITOR RENDER =====
+function renderEditor() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Dark background
+  ctx.fillStyle = '#12121f';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  drawGrid();
+  // Draw objects (backgrounds first, then rest)
+  const sorted = [...state.objects].sort((a, b) => {
+    const order = { bgSolid: 0, bgGradient: 0, platform: 1, wall: 1, spike: 1, collectible: 2, coin: 2, key: 2, healthPack: 2, portal: 2, projectile: 3, enemy: 4, player: 5, text: 6, button: 6 };
+    return (order[a.type] || 3) - (order[b.type] || 3);
+  });
+  sorted.forEach(obj => drawObject(obj, true));
+}
+
+// ===== INPUT HANDLING =====
+const keys = {};
+const keysJustPressed = {};
+document.addEventListener('keydown', e => {
+  if (state.playing) {
+    if (!keys[e.key]) keysJustPressed[e.key] = true;
+    keys[e.key] = true;
+    if (e.key === 'Escape') stopGame();
+    e.preventDefault();
+  } else {
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
+        state.selectedIds.forEach(id => deleteObject(id));
+        renderEditor();
+      }
+    }
+  }
+});
+document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+// ===== GAME ENGINE =====
+const GRAVITY = 900;
+let gameRunning = false;
+let gameTime = 0;
+let spawnedProjectiles = [];
+
+function startGame() {
+  if (state.objects.length === 0) { toast('请先添加一些对象到画布上', 'error'); return; }
+  const player = getPlayer();
+  if (!player) { toast('请先添加一个玩家对象', 'error'); return; }
+
+  state.playing = true;
+  gameRunning = true;
+  gameTime = 0;
+  state.score = 0;
+  state.health = player.health;
+  spawnedProjectiles = [];
+
+  // Reset objects
+  state.objects.forEach(obj => {
+    // Breakout ball keeps its initial velocity
+    if (!obj._breakoutBall) { obj.vx = 0; obj.vy = 0; }
+    else { obj._initVx = obj._initVx || obj.vx; obj._initVy = obj._initVy || obj.vy; obj.vx = obj._initVx; obj.vy = obj._initVy; }
+    obj.alive = true; obj.collected = false; obj.grounded = false;
+    obj.movePhase = 0;
+    obj.invincibleTimer = 0;
+    if (obj.type === 'player' || obj.type === 'enemy') {
+      obj.health = obj.maxHealth;
+    }
+    obj.patrolOrigin = obj.x;
+  });
+
+  // Store original positions for reset
+  state.objects.forEach(obj => { obj._origX = obj.x; obj._origY = obj.y; });
+
+  $('body').classList.add('playing');
+  $('#btnPlay').style.display = 'none';
+  $('#btnStop').style.display = '';
+  $('#playHud').classList.add('visible');
+  $('#gameOverlay').classList.remove('visible');
+  $('#statusText').textContent = '🎮 正在测试...';
+  canvas.style.cursor = 'default';
+
+  // Execute game start events
+  state.objects.forEach(obj => {
+    obj.events.forEach(ev => {
+      if (ev.trigger === 'gameStart') executeActions(obj, ev.actions);
+    });
+  });
+
+  lastTime = performance.now();
+  gameLoop(lastTime);
+}
+
+function stopGame() {
+  state.playing = false;
+  gameRunning = false;
+  $('body').classList.remove('playing');
+  $('#btnPlay').style.display = '';
+  $('#btnStop').style.display = 'none';
+  $('#playHud').classList.remove('visible');
+  $('#gameOverlay').classList.remove('visible');
+  $('#statusText').textContent = '就绪';
+  canvas.style.cursor = 'crosshair';
+  if (animFrame) cancelAnimationFrame(animFrame);
+
+  // Restore original positions and reset runtime states
+  state.objects.forEach(obj => {
+    if (obj._origX !== undefined) { obj.x = obj._origX; obj.y = obj._origY; }
+    obj.vx = 0; obj.vy = 0;
+    obj.alive = true; obj.collected = false; obj.grounded = false;
+    obj.movePhase = 0;
+    if (obj.type === 'player' || obj.type === 'enemy') {
+      obj.health = obj.maxHealth;
+    }
+  });
+  // Remove spawned projectiles
+  state.objects = state.objects.filter(o => !spawnedProjectiles.includes(o.id));
+  spawnedProjectiles = [];
+  particles.length = 0;
+  shakeTimer = 0;
+  shakeAmount = 0;
+
+  renderEditor();
+}
+
+function restartGame() {
+  stopGame();
+  setTimeout(startGame, 50);
+}
+
+function gameLoop(timestamp) {
+  if (!gameRunning) return;
+  const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
+  lastTime = timestamp;
+  gameTime += dt;
+
+  updateGame(dt);
+  updateParticles(dt);
+  if (shakeTimer > 0) shakeTimer -= dt;
+  renderGame();
+
+  // Update HUD
+  $('#hudScore').textContent = state.score;
+  $('#hudHealth').textContent = state.health;
+  $('#hudTimer').textContent = Math.floor(gameTime);
+
+  // Timer events
+  state.objects.forEach(obj => {
+    if (!obj.alive || obj.collected) return;
+    obj.events.forEach(ev => {
+      if (ev.trigger === 'timer') {
+        const interval = parseFloat(ev.triggerParams?.interval || 1);
+        if (interval > 0 && gameTime % interval < dt) {
+          executeActions(obj, ev.actions);
+        }
+      }
+    });
+  });
+
+  animFrame = requestAnimationFrame(gameLoop);
+}
+
+function updateGame(dt) {
+  const player = getPlayer();
+  if (!player || !player.alive) return;
+
+  // Input
+  let moveX = 0;
+  if (keys['ArrowLeft'] || keys['a'] || keys['A']) moveX = -1;
+  if (keys['ArrowRight'] || keys['d'] || keys['D']) moveX = 1;
+
+  // Player movement
+  if (player.controllable) {
+    player.vx = moveX * player.speed;
+    // Key press events
+    if (keysJustPressed['ArrowUp'] || keysJustPressed['w'] || keysJustPressed['W'] || keysJustPressed[' ']) {
+      if (player.grounded) {
+        player.vy = -player.jumpForce;
+        player.grounded = false;
+        audio.play('jump');
+      }
+      triggerKeyEvent(player, 'up');
+    }
+    if (keysJustPressed['ArrowDown'] || keysJustPressed['s'] || keysJustPressed['S']) {
+      triggerKeyEvent(player, 'down');
+    }
+    if (keysJustPressed['ArrowLeft'] || keysJustPressed['a']) triggerKeyEvent(player, 'left');
+    if (keysJustPressed['ArrowRight'] || keysJustPressed['d']) triggerKeyEvent(player, 'right');
+    // Shoot
+    if (keysJustPressed['f'] || keysJustPressed['F']) {
+      triggerKeyEvent(player, 'shoot');
+    }
+  }
+
+  // Clear just pressed
+  Object.keys(keysJustPressed).forEach(k => delete keysJustPressed[k]);
+
+  // Update each object
+  state.objects.forEach(obj => {
+    if (!obj.alive || obj.collected) return;
+
+    // AI behavior
+    if (obj.type === 'enemy' && obj.aiBehavior === 'patrol') {
+      obj.movePhase += dt;
+      obj.x = obj.patrolOrigin + Math.sin(obj.movePhase * (obj.speed / 60)) * obj.patrolRange;
+    } else if (obj.type === 'enemy' && obj.aiBehavior === 'chase') {
+      const dx = player.x - obj.x;
+      const dy = player.y - obj.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > 5) {
+        obj.vx = (dx / dist) * obj.speed;
+        if (obj.gravity) {
+          // Only chase horizontally
+          obj.vx = Math.sign(dx) * obj.speed;
+        } else {
+          obj.vy = (dy / dist) * obj.speed;
+        }
+      }
+    }
+
+    // Moving platform
+    if (obj.type === 'platform' && obj.moving) {
+      const prevX = obj.x;
+      const prevY = obj.y;
+      obj.movePhase += dt;
+      const offset = Math.sin(obj.movePhase * (obj.moveSpeed / 60)) * obj.moveRange;
+      if (obj.moveAxis === 'x') obj.x = obj._origX + offset;
+      else obj.y = obj._origY + offset;
+      // Carry objects standing on this platform
+      const dx = obj.x - prevX;
+      const dy = obj.y - prevY;
+      state.objects.forEach(other => {
+        if (other === obj || !other.alive || other.type === 'platform' || other.type === 'wall') return;
+        // Check if 'other' is standing on top of this platform
+        if (other.grounded && other.y + other.h >= obj.y - 2 && other.y + other.h <= obj.y + 4 &&
+            other.x + other.w > obj.x && other.x < obj.x + obj.w) {
+          other.x += dx;
+          other.y += dy;
+        }
+      });
+    }
+
+    // Gravity
+    if (obj.gravity) {
+      obj.vy += GRAVITY * dt;
+      // Clamp fall speed to prevent tunneling through platforms
+      obj.vy = Math.min(obj.vy, 600);
+    }
+
+    // Breakout ball handles its own movement
+    if (obj._breakoutBall) {
+      if (updateBreakoutBall(obj, dt)) return;
+    }
+
+    // Apply velocity (skip breakout ball - handled above)
+    if (!obj._breakoutBall) {
+      obj.x += obj.vx * dt;
+      obj.y += obj.vy * dt;
+    }
+
+    // Projectile handling (non-breakout)
+    if (obj.type === 'projectile' && !obj._breakoutBall) {
+      obj.lifetime -= dt;
+      if (obj.lifetime <= 0) { obj.alive = false; return; }
+      if (obj.direction === 'up') obj.vy = -obj.speed;
+      else if (obj.direction === 'down') obj.vy = obj.speed;
+      else if (obj.direction === 'left') obj.vx = -obj.speed;
+      else if (obj.direction === 'right') obj.vx = obj.speed;
+      else { obj.vy = -obj.speed; }
+    }
+
+    // Collision with platforms/walls
+    obj.grounded = false;
+    state.objects.forEach(other => {
+      if (other === obj || !other.alive || other.collected) return;
+      if (other.type !== 'platform' && other.type !== 'wall') return;
+      if (aabb(obj, other)) {
+        resolveCollision(obj, other);
+      }
+    });
+
+    // Canvas bounds
+    if (obj.type === 'player') {
+      if (obj.x < 0) obj.x = 0;
+      if (obj.x + obj.w > canvas.width) obj.x = canvas.width - obj.w;
+      if (obj.y < 0) { obj.y = 0; obj.vy = Math.max(0, obj.vy); }
+      if (obj.y + obj.h > canvas.height) {
+        if (!obj.gravity) { obj.y = canvas.height - obj.h; obj.vy = 0; }
+        else { obj.health = 0; obj.alive = false; gameOver(false); }
+      }
+    }
+
+    // Friction for non-player
+    if (obj.type !== 'player' && !obj.gravity) {
+      obj.vx *= obj.friction;
+      obj.vy *= obj.friction;
+    }
+  });
+
+  // Update invincibility
+  if (player.invincibleTimer > 0) player.invincibleTimer -= dt;
+
+  // Collision: player vs items/enemies
+  state.objects.forEach(obj => {
+    if (!obj.alive || obj.collected || obj === player) return;
+    if (obj._breakoutBall) return; // Breakout ball handled by its own physics
+    if (!aabb(player, obj)) return;
+
+    // Collision events
+    triggerCollisionEvent(player, obj);
+    triggerCollisionEvent(obj, player);
+
+    switch(obj.type) {
+      case 'collectible':
+      case 'coin':
+        spawnParticles(obj.x + obj.w/2, obj.y + obj.h/2, '#f1c40f', 6);
+        obj.collected = true;
+        state.score += obj.scoreValue;
+        audio.play('collect');
+        toast(`+${obj.scoreValue} 分`, 'success');
+        break;
+      case 'key':
+        obj.collected = true;
+        audio.play('collect');
+        toast('获得钥匙!', 'success');
+        break;
+      case 'healthPack':
+        obj.collected = true;
+        player.health = Math.min(player.maxHealth, player.health + obj.healAmount);
+        state.health = player.health;
+        audio.play('collect');
+        toast(`+${obj.healAmount} 生命`, 'success');
+        break;
+      case 'portal':
+        if (obj.winGame) { gameOver(true); return; }
+        player.x = obj.targetX;
+        player.y = obj.targetY;
+        player.vx = 0; player.vy = 0;
+        audio.play('portal');
+        break;
+      case 'enemy':
+        if (player.invincibleTimer > 0) break;
+        if (!player.grounded || player.vy > 0) {
+          player.health -= 10;
+          state.health = player.health;
+          player.invincibleTimer = 0.8;
+          audio.play('hit');
+          screenShake(6);
+          player.vx = (player.x < obj.x ? -200 : 200);
+          player.vy = -150;
+          if (player.health <= 0) { player.alive = false; gameOver(false); }
+        } else {
+          obj.alive = false;
+          player.vy = -250;
+          state.score += 20;
+          audio.play('hit');
+          spawnParticles(obj.x + obj.w/2, obj.y + obj.h/2, '#e94560', 8);
+        }
+        break;
+      case 'spike':
+        if (player.invincibleTimer > 0) break;
+        player.health -= obj.damage;
+        state.health = player.health;
+        player.invincibleTimer = 1.0;
+        audio.play('hit');
+        screenShake(8);
+        player.vy = -200;
+        if (player.health <= 0) { player.alive = false; gameOver(false); }
+        break;
+      case 'projectile':
+        if (player.invincibleTimer > 0) break;
+        player.health -= obj.damage;
+        state.health = player.health;
+        obj.alive = false;
+        player.invincibleTimer = 0.5;
+        audio.play('hit');
+        screenShake(4);
+        if (player.health <= 0) { player.alive = false; gameOver(false); }
+        break;
+    }
+  });
+
+  // Enemy projectile vs player handled above; player projectile vs enemy
+  state.objects.forEach(proj => {
+    if (proj.type !== 'projectile' || !proj.alive || proj._breakoutBall) return;
+    state.objects.forEach(target => {
+      if (target.type !== 'enemy' || !target.alive) return;
+      if (aabb(proj, target)) {
+        target.health -= proj.damage || 25;
+        proj.alive = false;
+        audio.play('hit');
+        if (target.health <= 0) {
+          target.alive = false;
+          state.score += 30;
+          spawnParticles(target.x + target.w/2, target.y + target.h/2, '#e94560', 8);
+        }
+      }
+    });
+  });
+
+  // Final bounds clamp (after all collision knockbacks)
+  const p = getPlayer();
+  if (p && p.alive) {
+    if (p.y < 0) { p.y = 0; if (p.vy < 0) p.vy = 0; }
+    if (p.y + p.h > canvas.height && !p.gravity) { p.y = canvas.height - p.h; p.vy = 0; }
+    if (p.x < 0) p.x = 0;
+    if (p.x + p.w > canvas.width) p.x = canvas.width - p.w;
+  }
+}
+
+function aabb(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+function resolveCollision(obj, platform) {
+  const overlapLeft = obj.x + obj.w - platform.x;
+  const overlapRight = platform.x + platform.w - obj.x;
+  const overlapTop = obj.y + obj.h - platform.y;
+  const overlapBottom = platform.y + platform.h - obj.y;
+
+  const overlapX = Math.min(overlapLeft, overlapRight);
+  const overlapY = Math.min(overlapTop, overlapBottom);
+
+  if (overlapY <= overlapX) {
+    // Resolve vertically - prefer landing on top (platformer-friendly)
+    if (obj.vy >= 0 || overlapTop <= overlapBottom) {
+      obj.y = platform.y - obj.h;
+      obj.vy = 0;
+      obj.grounded = true;
+    } else {
+      obj.y = platform.y + platform.h;
+      obj.vy = 0;
+    }
+  } else {
+    // Resolve horizontally
+    if (overlapLeft < overlapRight) {
+      obj.x = platform.x - obj.w;
+    } else {
+      obj.x = platform.x + platform.w;
+    }
+    obj.vx = 0;
+  }
+}
+
+function renderGame() {
+  ctx.save();
+  if (shakeTimer > 0) {
+    const ox = (Math.random() - 0.5) * shakeAmount * 2;
+    const oy = (Math.random() - 0.5) * shakeAmount * 2;
+    ctx.translate(ox, oy);
+  }
+  ctx.clearRect(-10, -10, canvas.width + 20, canvas.height + 20);
+  const sorted = [...state.objects].sort((a, b) => {
+    const order = { bgSolid: 0, bgGradient: 0, platform: 1, wall: 1, spike: 1, collectible: 2, coin: 2, key: 2, healthPack: 2, portal: 2, projectile: 3, enemy: 4, player: 5, text: 6, button: 6 };
+    return (order[a.type] || 3) - (order[b.type] || 3);
+  });
+  sorted.forEach(obj => {
+    if (obj.alive && !obj.collected) drawObject(obj, false);
+  });
+  renderParticles();
+  ctx.restore();
+}
+
+function gameOver(won) {
+  gameRunning = false;
+  if (animFrame) cancelAnimationFrame(animFrame);
+  if (won) {
+    audio.play('win');
+    $('#overlayTitle').textContent = '🏆 游戏胜利!';
+    $('#overlayTitle').style.color = '#f1c40f';
+  } else {
+    audio.play('lose');
+    $('#overlayTitle').textContent = '💀 游戏失败';
+    $('#overlayTitle').style.color = '#e94560';
+  }
+  $('#overlayMsg').textContent = `最终分数: ${state.score} | 用时: ${Math.floor(gameTime)}秒`;
+  $('#gameOverlay').classList.add('visible');
+}
+
+// ===== EVENT EXECUTION =====
+function triggerKeyEvent(obj, keyName) {
+  obj.events.forEach(ev => {
+    if (ev.trigger === 'keyPress' && ev.triggerParams?.key === keyName) {
+      executeActions(obj, ev.actions);
+    }
+  });
+}
+
+function triggerCollisionEvent(obj, other) {
+  obj.events.forEach(ev => {
+    if (ev.trigger === 'collision') {
+      if (!ev.triggerParams?.targetType || ev.triggerParams.targetType === 'any' || ev.triggerParams.targetType === other.type) {
+        executeActions(obj, ev.actions, other);
+      }
+    }
+  });
+}
+
+function executeActions(obj, actions, other) {
+  if (!actions) return;
+  actions.forEach(action => {
+    executeAction(obj, action, other);
+  });
+}
+
+function executeAction(obj, action, other) {
+  const params = action.params || {};
+  switch(action.type) {
+    case 'move':
+      const dir = params.direction || 'right';
+      const spd = parseFloat(params.speed || 100);
+      if (dir === 'left') obj.vx = -spd;
+      else if (dir === 'right') obj.vx = spd;
+      else if (dir === 'up') obj.vy = -spd;
+      else if (dir === 'down') obj.vy = spd;
+      break;
+    case 'jump':
+      obj.vy = -parseFloat(params.force || 400);
+      audio.play('jump');
+      break;
+    case 'playSound':
+      audio.play(params.sound || 'collect');
+      break;
+    case 'addScore':
+      state.score += parseInt(params.amount || 10);
+      break;
+    case 'destroy':
+      const target = params.target === 'self' ? obj : (params.target === 'other' ? other : findObj(params.targetId));
+      if (target) { target.alive = false; target.collected = true; }
+      break;
+    case 'spawn': {
+      const spawnType = params.objectType || 'collectible';
+      const spawnDef = OBJ_TYPES[spawnType] || { w: 16, h: 16 };
+      const rawSx = parseFloat(params.spawnX);
+      const rawSy = parseFloat(params.spawnY);
+      const sx = isNaN(rawSx) ? obj.x + obj.w/2 - spawnDef.w/2 : rawSx;
+      const sy = isNaN(rawSy) ? obj.y - spawnDef.h : rawSy;
+      const spawned = createObject(spawnType, sx, sy);
+      if (spawned) spawnedProjectiles.push(spawned.id);
+      break;
+    }
+    case 'winGame':
+      gameOver(true);
+      break;
+    case 'loseGame':
+      obj.alive = false;
+      gameOver(false);
+      break;
+    case 'changeColor':
+      obj.color = params.color || '#ff0000';
+      break;
+    case 'showText':
+      toast(params.text || '你好!', 'info');
+      break;
+    case 'setVelocity':
+      if (params.vx !== undefined) obj.vx = parseFloat(params.vx);
+      if (params.vy !== undefined) obj.vy = parseFloat(params.vy);
+      break;
+    case 'takeDamage':
+      const dmgTarget = params.target === 'self' ? obj : (params.target === 'other' ? other : findObj(params.targetId));
+      if (dmgTarget) {
+        dmgTarget.health -= parseInt(params.amount || 10);
+        if (dmgTarget.type === 'player') state.health = dmgTarget.health;
+        if (dmgTarget.health <= 0) dmgTarget.alive = false;
+      }
+      break;
+    case 'heal':
+      const healTarget = params.target === 'self' ? obj : findObj(params.targetId);
+      if (healTarget) {
+        healTarget.health = Math.min(healTarget.maxHealth, healTarget.health + parseInt(params.amount || 20));
+        if (healTarget.type === 'player') state.health = healTarget.health;
+      }
+      break;
+    case 'teleport':
+      obj.x = parseFloat(params.teleportX || obj.x);
+      obj.y = parseFloat(params.teleportY || obj.y);
+      obj.vx = 0; obj.vy = 0;
+      break;
+  }
+}
+
+// ===== PALETTE SETUP =====
+function buildPalette() {
+  const container = $('#paletteCategories');
+  container.innerHTML = '';
+  PALETTE_CATEGORIES.forEach(cat => {
+    const catDiv = document.createElement('div');
+    catDiv.className = 'pal-cat';
+    const header = document.createElement('div');
+    header.className = 'pal-cat-header';
+    header.innerHTML = `<span class="arrow">▼</span> ${cat.name}`;
+    header.addEventListener('click', () => {
+      header.classList.toggle('collapsed');
+      itemsDiv.classList.toggle('hidden');
+    });
+    catDiv.appendChild(header);
+
+    const itemsDiv = document.createElement('div');
+    itemsDiv.className = 'pal-cat-items';
+    cat.items.forEach(typeKey => {
+      const def = OBJ_TYPES[typeKey];
+      const item = document.createElement('div');
+      item.className = 'pal-item';
+      item.draggable = true;
+      item.dataset.type = typeKey;
+      item.innerHTML = `<span>${def.emoji}</span><span class="pal-label">${def.name}</span>`;
+
+      item.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', typeKey);
+        e.dataTransfer.effectAllowed = 'copy';
+        item.classList.add('dragging');
+        const ghost = $('#dragGhost');
+        ghost.textContent = def.emoji;
+        ghost.style.display = 'block';
+        e.dataTransfer.setDragImage(ghost, 20, 20);
+      });
+      item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+        $('#dragGhost').style.display = 'none';
+      });
+      // Double-click to add at center
+      item.addEventListener('dblclick', () => {
+        const cx = canvas.width / 2 - def.w / 2;
+        const cy = canvas.height / 2 - def.h / 2;
+        const obj = createObject(typeKey, cx, cy);
+        state.selectedIds = [obj.id];
+        renderEditor();
+        updatePropsPanel();
+        toast(`已添加 ${def.name}`, 'success');
+      });
+      itemsDiv.appendChild(item);
+    });
+    catDiv.appendChild(itemsDiv);
+    container.appendChild(catDiv);
+  });
+}
+
+// ===== CANVAS DROP & INTERACTION =====
+canvas.addEventListener('dragover', e => {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'copy';
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / state.zoom;
+  const y = (e.clientY - rect.top) / state.zoom;
+  const dh = $('#dropHighlight');
+  const typeKey = e.dataTransfer.types.includes('text/plain') ? '' : '';
+  dh.style.display = 'block';
+  dh.style.left = (x * state.zoom) + 'px';
+  dh.style.top = (y * state.zoom) + 'px';
+  dh.style.width = '40px';
+  dh.style.height = '40px';
+});
+
+canvas.addEventListener('dragleave', () => {
+  $('#dropHighlight').style.display = 'none';
+});
+
+canvas.addEventListener('drop', e => {
+  e.preventDefault();
+  $('#dropHighlight').style.display = 'none';
+  const typeKey = e.dataTransfer.getData('text/plain');
+  if (!typeKey || !OBJ_TYPES[typeKey]) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / state.zoom;
+  const y = (e.clientY - rect.top) / state.zoom;
+  const def = OBJ_TYPES[typeKey];
+  const obj = createObject(typeKey, x - def.w/2, y - def.h/2);
+  state.selectedIds = [obj.id];
+  renderEditor();
+  updatePropsPanel();
+  toast(`已添加 ${def.name}`, 'success');
+});
+
+// Canvas click to select
+let isDraggingObj = false;
+let dragStartX, dragStartY, dragObjStartX, dragObjStartY;
+let resizeHandle = null;
+let resizeObj = null;
+
+canvas.addEventListener('mousedown', e => {
+  if (state.playing) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) / state.zoom;
+  const my = (e.clientY - rect.top) / state.zoom;
+
+  // Check resize handles first
+  for (const id of state.selectedIds) {
+    const obj = findObj(id);
+    if (!obj) continue;
+    const handles = [
+      { name: 'nw', x: obj.x - 4, y: obj.y - 4 },
+      { name: 'ne', x: obj.x + obj.w - 4, y: obj.y - 4 },
+      { name: 'sw', x: obj.x - 4, y: obj.y + obj.h - 4 },
+      { name: 'se', x: obj.x + obj.w - 4, y: obj.y + obj.h - 4 }
+    ];
+    for (const h of handles) {
+      if (mx >= h.x && mx <= h.x + 8 && my >= h.y && my <= h.y + 8) {
+        resizeHandle = h.name;
+        resizeObj = obj;
+        dragStartX = mx; dragStartY = my;
+        return;
+      }
+    }
+  }
+
+  // Check object click (reverse order for top-most first)
+  let clicked = null;
+  for (let i = state.objects.length - 1; i >= 0; i--) {
+    const obj = state.objects[i];
+    if (mx >= obj.x && mx <= obj.x + obj.w && my >= obj.y && my <= obj.y + obj.h) {
+      clicked = obj;
+      break;
+    }
+  }
+
+  if (clicked) {
+    if (e.shiftKey) {
+      if (state.selectedIds.includes(clicked.id)) {
+        state.selectedIds = state.selectedIds.filter(id => id !== clicked.id);
+      } else {
+        state.selectedIds.push(clicked.id);
+      }
+    } else {
+      if (!state.selectedIds.includes(clicked.id)) {
+        state.selectedIds = [clicked.id];
+      }
+    }
+    isDraggingObj = true;
+    dragStartX = mx; dragStartY = my;
+    // Store start positions for all selected
+    state.selectedIds.forEach(id => {
+      const o = findObj(id);
+      if (o) { o._dragStartX = o.x; o._dragStartY = o.y; }
+    });
+  } else {
+    state.selectedIds = [];
+  }
+
+  renderEditor();
+  updatePropsPanel();
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (state.playing) return;
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) / state.zoom;
+  const my = (e.clientY - rect.top) / state.zoom;
+
+  if (resizeHandle && resizeObj) {
+    const dx = mx - dragStartX;
+    const dy = my - dragStartY;
+    if (resizeHandle.includes('e')) resizeObj.w = Math.max(10, resizeObj.w + dx);
+    if (resizeHandle.includes('w')) { resizeObj.x += dx; resizeObj.w = Math.max(10, resizeObj.w - dx); }
+    if (resizeHandle.includes('s')) resizeObj.h = Math.max(10, resizeObj.h + dy);
+    if (resizeHandle.includes('n')) { resizeObj.y += dy; resizeObj.h = Math.max(10, resizeObj.h - dy); }
+    dragStartX = mx; dragStartY = my;
+    renderEditor();
+    updatePropsPanel();
+    return;
+  }
+
+  if (isDraggingObj) {
+    const dx = mx - dragStartX;
+    const dy = my - dragStartY;
+    state.selectedIds.forEach(id => {
+      const o = findObj(id);
+      if (o && !o.locked) {
+        o.x = o._dragStartX + dx;
+        o.y = o._dragStartY + dy;
+        // Snap to grid
+        if (!e.altKey) {
+          o.x = Math.round(o.x / state.gridSize) * state.gridSize;
+          o.y = Math.round(o.y / state.gridSize) * state.gridSize;
+        }
+      }
+    });
+    renderEditor();
+    updatePropsPanel();
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  isDraggingObj = false;
+  resizeHandle = null;
+  resizeObj = null;
+});
+
+// ===== PROPERTIES PANEL =====
+function updatePropsPanel() {
+  const panel = $('#propsPanel');
+  const noSel = $('#noSelection');
+  const eventsNoSel = $('#noSelectionEvents');
+  const eventsPanel = $('#eventsPanel');
+
+  if (state.selectedIds.length === 0) {
+    panel.style.display = 'none';
+    noSel.style.display = '';
+    eventsPanel.style.display = 'none';
+    eventsNoSel.style.display = '';
+    return;
+  }
+
+  if (state.selectedIds.length > 1) {
+    panel.style.display = 'block';
+    noSel.style.display = 'none';
+    panel.innerHTML = `<p style="color:var(--text-muted);font-size:13px;padding:20px">已选择 ${state.selectedIds.length} 个对象</p>`;
+    eventsPanel.style.display = 'none';
+    eventsNoSel.style.display = '';
+    return;
+  }
+
+  const obj = findObj(state.selectedIds[0]);
+  if (!obj) return;
+
+  noSel.style.display = 'none';
+  panel.style.display = 'block';
+  eventsNoSel.style.display = 'none';
+  eventsPanel.style.display = 'block';
+
+  const def = OBJ_TYPES[obj.type];
+  let html = '';
+
+  // Basic props
+  html += `<div class="prop-group">
+    <div class="prop-group-title">基本信息</div>
+    <div class="prop-row"><span class="prop-label">名称</span><input class="prop-input" data-prop="name" value="${obj.name}"></div>
+    <div class="prop-row"><span class="prop-label">类型</span><span style="font-size:12px;color:var(--text-muted)">${def.emoji} ${def.name}</span></div>
+    <div class="prop-row"><span class="prop-label">可见</span><label class="prop-checkbox"><input type="checkbox" data-prop="visible" ${obj.visible ? 'checked' : ''}> 显示</label></div>
+  </div>`;
+
+  // Transform
+  html += `<div class="prop-group">
+    <div class="prop-group-title">变换</div>
+    <div class="prop-row"><span class="prop-label">X</span><input class="prop-input prop-input-sm" type="number" data-prop="x" value="${Math.round(obj.x)}"></div>
+    <div class="prop-row"><span class="prop-label">Y</span><input class="prop-input prop-input-sm" type="number" data-prop="y" value="${Math.round(obj.y)}"></div>
+    <div class="prop-row"><span class="prop-label">宽</span><input class="prop-input prop-input-sm" type="number" data-prop="w" value="${Math.round(obj.w)}" min="5"></div>
+    <div class="prop-row"><span class="prop-label">高</span><input class="prop-input prop-input-sm" type="number" data-prop="h" value="${Math.round(obj.h)}" min="5"></div>
+  </div>`;
+
+  // Color
+  if (['platform', 'wall', 'bgSolid', 'bgGradient', 'button'].includes(obj.type) || obj.color !== '#888') {
+    html += `<div class="prop-group">
+      <div class="prop-group-title">外观</div>
+      <div class="prop-row"><span class="prop-label">颜色</span><input class="prop-color" type="color" data-prop="color" value="${obj.color}"></div>`;
+    if (obj.type === 'bgGradient') {
+      html += `<div class="prop-row"><span class="prop-label">颜色1</span><input class="prop-color" type="color" data-prop="color1" value="${obj.color1}"></div>
+        <div class="prop-row"><span class="prop-label">颜色2</span><input class="prop-color" type="color" data-prop="color2" value="${obj.color2}"></div>
+        <div class="prop-row"><span class="prop-label">方向</span><select class="prop-select" data-prop="gradientDir">
+          <option value="vertical" ${obj.gradientDir === 'vertical' ? 'selected' : ''}>垂直</option>
+          <option value="horizontal" ${obj.gradientDir === 'horizontal' ? 'selected' : ''}>水平</option>
+          <option value="radial" ${obj.gradientDir === 'radial' ? 'selected' : ''}>径向</option>
+        </select></div>
+        <div class="prop-row"><label class="prop-checkbox"><input type="checkbox" data-prop="parallax" ${obj.parallax ? 'checked' : ''}> 视差滚动</label></div>`;
+    }
+    html += `</div>`;
+  }
+
+  // Physics
+  if (['player', 'enemy', 'collectible', 'coin', 'projectile'].includes(obj.type)) {
+    html += `<div class="prop-group">
+      <div class="prop-group-title">物理</div>
+      <div class="prop-row"><label class="prop-checkbox"><input type="checkbox" data-prop="gravity" ${obj.gravity ? 'checked' : ''}> 重力</label></div>
+      <div class="prop-row"><span class="prop-label">弹力</span><input class="prop-input prop-input-sm" type="number" data-prop="bounce" value="${obj.bounce}" min="0" max="1" step="0.1"></div>
+      <div class="prop-row"><span class="prop-label">摩擦力</span><input class="prop-input prop-input-sm" type="number" data-prop="friction" value="${obj.friction}" min="0" max="1" step="0.1"></div>
+    </div>`;
+  }
+
+  // Speed / movement
+  if (['player', 'enemy', 'projectile'].includes(obj.type)) {
+    html += `<div class="prop-group">
+      <div class="prop-group-title">运动</div>
+      <div class="prop-row"><span class="prop-label">速度</span><input class="prop-input prop-input-sm" type="number" data-prop="speed" value="${obj.speed}" min="0"></div>`;
+    if (obj.type === 'player') {
+      html += `<div class="prop-row"><span class="prop-label">跳跃力</span><input class="prop-input prop-input-sm" type="number" data-prop="jumpForce" value="${obj.jumpForce}" min="0"></div>
+        <div class="prop-row"><label class="prop-checkbox"><input type="checkbox" data-prop="controllable" ${obj.controllable ? 'checked' : ''}> 可控制</label></div>`;
+    }
+    if (obj.type === 'projectile') {
+      html += `<div class="prop-row"><span class="prop-label">方向</span><select class="prop-select" data-prop="direction">
+        <option value="up" ${obj.direction === 'up' ? 'selected' : ''}>上</option>
+        <option value="down" ${obj.direction === 'down' ? 'selected' : ''}>下</option>
+        <option value="left" ${obj.direction === 'left' ? 'selected' : ''}>左</option>
+        <option value="right" ${obj.direction === 'right' ? 'selected' : ''}>右</option>
+      </select></div>
+      <div class="prop-row"><span class="prop-label">寿命(秒)</span><input class="prop-input prop-input-sm" type="number" data-prop="lifetime" value="${obj.lifetime}" min="0.1" step="0.1"></div>
+      <div class="prop-row"><span class="prop-label">伤害</span><input class="prop-input prop-input-sm" type="number" data-prop="damage" value="${obj.damage}" min="0"></div>`;
+    }
+    html += `</div>`;
+  }
+
+  // AI
+  if (obj.type === 'enemy') {
+    html += `<div class="prop-group">
+      <div class="prop-group-title">AI 行为</div>
+      <div class="prop-row"><span class="prop-label">行为</span><select class="prop-select" data-prop="aiBehavior">
+        <option value="none" ${obj.aiBehavior === 'none' ? 'selected' : ''}>无</option>
+        <option value="patrol" ${obj.aiBehavior === 'patrol' ? 'selected' : ''}>巡逻</option>
+        <option value="chase" ${obj.aiBehavior === 'chase' ? 'selected' : ''}>追踪</option>
+        <option value="stationary" ${obj.aiBehavior === 'stationary' ? 'selected' : ''}>静止</option>
+      </select></div>
+      <div class="prop-row"><span class="prop-label">巡逻范围</span><input class="prop-input prop-input-sm" type="number" data-prop="patrolRange" value="${obj.patrolRange}" min="10"></div>
+      <div class="prop-row"><span class="prop-label">生命值</span><input class="prop-input prop-input-sm" type="number" data-prop="maxHealth" value="${obj.maxHealth}" min="1"></div>
+      <div class="prop-row"><span class="prop-label">伤害</span><input class="prop-input prop-input-sm" type="number" data-prop="damage" value="${obj.damage}" min="0"></div>
+    </div>`;
+  }
+
+  // Player specific
+  if (obj.type === 'player') {
+    html += `<div class="prop-group">
+      <div class="prop-group-title">玩家</div>
+      <div class="prop-row"><span class="prop-label">生命值</span><input class="prop-input prop-input-sm" type="number" data-prop="maxHealth" value="${obj.maxHealth}" min="1"></div>
+    </div>`;
+  }
+
+  // Platform specific
+  if (obj.type === 'platform') {
+    html += `<div class="prop-group">
+      <div class="prop-group-title">平台</div>
+      <div class="prop-row"><label class="prop-checkbox"><input type="checkbox" data-prop="moving" ${obj.moving ? 'checked' : ''}> 移动平台</label></div>
+      <div class="prop-row"><span class="prop-label">范围</span><input class="prop-input prop-input-sm" type="number" data-prop="moveRange" value="${obj.moveRange}" min="10"></div>
+      <div class="prop-row"><span class="prop-label">速度</span><input class="prop-input prop-input-sm" type="number" data-prop="moveSpeed" value="${obj.moveSpeed}" min="10"></div>
+      <div class="prop-row"><span class="prop-label">轴向</span><select class="prop-select" data-prop="moveAxis">
+        <option value="x" ${obj.moveAxis === 'x' ? 'selected' : ''}>水平</option>
+        <option value="y" ${obj.moveAxis === 'y' ? 'selected' : ''}>垂直</option>
+      </select></div>
+    </div>`;
+  }
+
+  // Collectible
+  if (obj.type === 'collectible' || obj.type === 'coin') {
+    html += `<div class="prop-group">
+      <div class="prop-group-title">收集品</div>
+      <div class="prop-row"><span class="prop-label">分数</span><input class="prop-input prop-input-sm" type="number" data-prop="scoreValue" value="${obj.scoreValue}" min="0"></div>
+    </div>`;
+  }
+
+  // Portal
+  if (obj.type === 'portal') {
+    html += `<div class="prop-group">
+      <div class="prop-group-title">传送门</div>
+      <div class="prop-row"><span class="prop-label">目标X</span><input class="prop-input prop-input-sm" type="number" data-prop="targetX" value="${obj.targetX}"></div>
+      <div class="prop-row"><span class="prop-label">目标Y</span><input class="prop-input prop-input-sm" type="number" data-prop="targetY" value="${obj.targetY}"></div>
+      <div class="prop-row"><label class="prop-checkbox"><input type="checkbox" data-prop="winGame" ${obj.winGame ? 'checked' : ''}> 触发胜利</label></div>
+    </div>`;
+  }
+
+  // Text
+  if (obj.type === 'text') {
+    html += `<div class="prop-group">
+      <div class="prop-group-title">文字</div>
+      <div class="prop-row"><span class="prop-label">内容</span><input class="prop-input" data-prop="text" value="${obj.text}"></div>
+      <div class="prop-row"><span class="prop-label">字号</span><input class="prop-input prop-input-sm" type="number" data-prop="fontSize" value="${obj.fontSize}" min="8"></div>
+      <div class="prop-row"><span class="prop-label">颜色</span><input class="prop-color" type="color" data-prop="fontColor" value="${obj.fontColor}"></div>
+    </div>`;
+  }
+
+  // Spike
+  if (obj.type === 'spike') {
+    html += `<div class="prop-group">
+      <div class="prop-group-title">尖刺</div>
+      <div class="prop-row"><span class="prop-label">伤害</span><input class="prop-input prop-input-sm" type="number" data-prop="damage" value="${obj.damage}" min="1"></div>
+    </div>`;
+  }
+
+  // Health pack
+  if (obj.type === 'healthPack') {
+    html += `<div class="prop-group">
+      <div class="prop-group-title">生命包</div>
+      <div class="prop-row"><span class="prop-label">恢复量</span><input class="prop-input prop-input-sm" type="number" data-prop="healAmount" value="${obj.healAmount}" min="1"></div>
+    </div>`;
+  }
+
+  // Duplicate / Delete buttons
+  html += `<div class="prop-group">
+    <button class="prop-btn-delete" onclick="duplicateSelected()">📋 复制对象</button>
+    <button class="prop-btn-delete" style="margin-top:4px;background:rgba(233,69,96,0.15);border-color:rgba(233,69,96,0.3);color:var(--accent)" onclick="deleteSelected()">🗑️ 删除对象</button>
+  </div>`;
+
+  panel.innerHTML = html;
+
+  // Bind input events
+  panel.querySelectorAll('[data-prop]').forEach(input => {
+    const handler = () => {
+      const prop = input.dataset.prop;
+      let val;
+      if (input.type === 'checkbox') val = input.checked;
+      else if (input.type === 'number') val = parseFloat(input.value) || 0;
+      else val = input.value;
+      const obj = findObj(state.selectedIds[0]);
+      if (obj) {
+        obj[prop] = val;
+        if (prop === 'maxHealth') obj.health = val;
+        if (prop === 'moving') obj.movePhase = 0;
+        renderEditor();
+      }
+    };
+    input.addEventListener('input', handler);
+    input.addEventListener('change', handler);
+  });
+
+  // Update events panel
+  updateEventsPanel(obj);
+}
+
+function deleteSelected() {
+  state.selectedIds.forEach(id => deleteObject(id));
+  renderEditor();
+}
+
+function duplicateSelected() {
+  const newIds = [];
+  state.selectedIds.forEach(id => {
+    const obj = findObj(id);
+    if (!obj) return;
+    const dup = { ...obj };
+    dup.id = uid();
+    dup.name = obj.name + '_副本';
+    dup.x += 20;
+    dup.y += 20;
+    dup.events = JSON.parse(JSON.stringify(obj.events));
+    dup._origX = undefined;
+    dup._origY = undefined;
+    state.objects.push(dup);
+    newIds.push(dup.id);
+  });
+  state.selectedIds = newIds;
+  renderEditor();
+  updatePropsPanel();
+  toast('已复制对象', 'success');
+}
+
+// ===== EVENTS PANEL =====
+let addEventMenuVisible = null;
+
+function updateEventsPanel(obj) {
+  const panel = $('#eventsPanel');
+  if (!obj) { panel.style.display = 'none'; return; }
+
+  let html = '';
+
+  obj.events.forEach((ev, evIdx) => {
+    const trigDef = EVENT_TRIGGERS[ev.trigger] || { name: ev.trigger, color: '#888' };
+    html += `<div class="event-block event-trigger" style="border-left-color:${trigDef.color}">
+      <div class="event-block-header" style="color:${trigDef.color}">
+        <span class="ev-icon" style="background:${trigDef.color}33">🎮</span>
+        <span class="ev-title">${trigDef.name}</span>
+        <span class="ev-remove" onclick="removeEvent('${obj.id}', ${evIdx})">×</span>
+      </div>
+      <div class="event-block-body">`;
+
+    // Trigger params
+    if (ev.trigger === 'keyPress') {
+      html += `<div class="prop-row"><span class="prop-label">按键</span><select class="prop-select" onchange="updateTriggerParam('${obj.id}',${evIdx},'key',this.value)">
+        <option value="up" ${ev.triggerParams?.key === 'up' ? 'selected' : ''}>↑ 上</option>
+        <option value="down" ${ev.triggerParams?.key === 'down' ? 'selected' : ''}>↓ 下</option>
+        <option value="left" ${ev.triggerParams?.key === 'left' ? 'selected' : ''}>← 左</option>
+        <option value="right" ${ev.triggerParams?.key === 'right' ? 'selected' : ''}>→ 右</option>
+        <option value="shoot" ${ev.triggerParams?.key === 'shoot' ? 'selected' : ''}>F 射击</option>
+      </select></div>`;
+    }
+    if (ev.trigger === 'collision') {
+      html += `<div class="prop-row"><span class="prop-label">目标</span><select class="prop-select" onchange="updateTriggerParam('${obj.id}',${evIdx},'targetType',this.value)">
+        <option value="any" ${ev.triggerParams?.targetType === 'any' ? 'selected' : ''}>任何对象</option>
+        <option value="player" ${ev.triggerParams?.targetType === 'player' ? 'selected' : ''}>玩家</option>
+        <option value="enemy" ${ev.triggerParams?.targetType === 'enemy' ? 'selected' : ''}>敌人</option>
+        <option value="collectible" ${ev.triggerParams?.targetType === 'collectible' ? 'selected' : ''}>收集品</option>
+        <option value="platform" ${ev.triggerParams?.targetType === 'platform' ? 'selected' : ''}>平台</option>
+        <option value="projectile" ${ev.triggerParams?.targetType === 'projectile' ? 'selected' : ''}>子弹</option>
+      </select></div>`;
+    }
+    if (ev.trigger === 'timer') {
+      html += `<div class="prop-row"><span class="prop-label">间隔(秒)</span><input class="prop-input prop-input-sm" type="number" min="0.1" step="0.1" value="${ev.triggerParams?.interval || 1}" onchange="updateTriggerParam('${obj.id}',${evIdx},'interval',this.value)"></div>`;
+    }
+
+    // Actions
+    html += `<div style="margin-top:6px">`;
+    (ev.actions || []).forEach((action, actIdx) => {
+      const actDef = EVENT_ACTIONS[action.type] || { name: action.type, color: '#888' };
+      html += `<div class="event-block event-action" style="border-left-color:${actDef.color};margin:4px 0">
+        <div class="event-block-header" style="color:${actDef.color};padding:6px 8px">
+          <span class="ev-icon" style="background:${actDef.color}33;font-size:9px">⚡</span>
+          <span class="ev-title" style="font-size:11px">${actDef.name}</span>
+          <span class="ev-remove" onclick="removeAction('${obj.id}',${evIdx},${actIdx})">×</span>
+        </div>
+        <div class="event-block-body" style="padding:4px 8px 6px">`;
+      html += buildActionParamsUI(obj, evIdx, actIdx, action);
+      html += `</div></div>`;
+    });
+    html += `</div>`;
+
+    // Add action button
+    html += `<button class="add-event-btn" style="margin-top:4px;font-size:11px;padding:5px" onclick="showAddActionMenu('${obj.id}',${evIdx})">+ 添加动作</button>`;
+    html += `<div id="addActionMenu_${obj.id}_${evIdx}" class="add-event-menu hidden">`;
+    Object.keys(EVENT_ACTIONS).forEach(actKey => {
+      const a = EVENT_ACTIONS[actKey];
+      html += `<div class="add-event-opt" onclick="addAction('${obj.id}',${evIdx},'${actKey}')"><span class="opt-icon" style="background:${a.color}"></span>${a.name}</div>`;
+    });
+    html += `</div>`;
+
+    html += `</div></div>`;
+  });
+
+  // Add event trigger button
+  html += `<button class="add-event-btn" onclick="toggleAddEventMenu()">+ 添加触发器</button>`;
+  html += `<div id="addEventMenu" class="add-event-menu hidden">`;
+  Object.keys(EVENT_TRIGGERS).forEach(trigKey => {
+    const t = EVENT_TRIGGERS[trigKey];
+    html += `<div class="add-event-opt" onclick="addEvent('${obj.id}','${trigKey}')"><span class="opt-icon" style="background:${t.color}"></span>${t.name}</div>`;
+  });
+  html += `</div>`;
+
+  panel.innerHTML = html;
+}
+
+function buildActionParamsUI(obj, evIdx, actIdx, action) {
+  const p = action.params || {};
+  let html = '';
+  switch(action.type) {
+    case 'move':
+      html += `<div class="prop-row"><span class="prop-label">方向</span><select class="prop-select" style="font-size:11px" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'direction',this.value)">
+        <option value="left" ${p.direction==='left'?'selected':''}>左</option><option value="right" ${p.direction==='right'?'selected':''}>右</option>
+        <option value="up" ${p.direction==='up'?'selected':''}>上</option><option value="down" ${p.direction==='down'?'selected':''}>下</option></select></div>
+        <div class="prop-row"><span class="prop-label">速度</span><input class="prop-input prop-input-sm" type="number" value="${p.speed||100}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'speed',this.value)"></div>`;
+      break;
+    case 'jump':
+      html += `<div class="prop-row"><span class="prop-label">力度</span><input class="prop-input prop-input-sm" type="number" value="${p.force||400}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'force',this.value)"></div>`;
+      break;
+    case 'playSound':
+      html += `<div class="prop-row"><span class="prop-label">音效</span><select class="prop-select" style="font-size:11px" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'sound',this.value)">
+        <option value="jump" ${p.sound==='jump'?'selected':''}>跳跃</option><option value="collect" ${p.sound==='collect'?'selected':''}>收集</option>
+        <option value="hit" ${p.sound==='hit'?'selected':''}>受击</option><option value="shoot" ${p.sound==='shoot'?'selected':''}>射击</option>
+        <option value="win" ${p.sound==='win'?'selected':''}>胜利</option><option value="lose" ${p.sound==='lose'?'selected':''}>失败</option>
+        <option value="portal" ${p.sound==='portal'?'selected':''}>传送</option></select></div>`;
+      break;
+    case 'addScore':
+      html += `<div class="prop-row"><span class="prop-label">数量</span><input class="prop-input prop-input-sm" type="number" value="${p.amount||10}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'amount',this.value)"></div>`;
+      break;
+    case 'destroy':
+      html += `<div class="prop-row"><span class="prop-label">目标</span><select class="prop-select" style="font-size:11px" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'target',this.value)">
+        <option value="self" ${p.target==='self'?'selected':''}>自身</option><option value="other" ${p.target==='other'?'selected':''}>碰撞对象</option></select></div>`;
+      break;
+    case 'spawn':
+      html += `<div class="prop-row"><span class="prop-label">类型</span><select class="prop-select" style="font-size:11px" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'objectType',this.value)">`;
+      Object.keys(OBJ_TYPES).forEach(k => { html += `<option value="${k}" ${p.objectType===k?'selected':''}>${OBJ_TYPES[k].name}</option>`; });
+      html += `</select></div>
+        <div class="prop-row"><span class="prop-label">X</span><input class="prop-input prop-input-sm" type="number" value="${p.spawnX||obj.x}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'spawnX',this.value)"></div>
+        <div class="prop-row"><span class="prop-label">Y</span><input class="prop-input prop-input-sm" type="number" value="${p.spawnY||obj.y}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'spawnY',this.value)"></div>`;
+      break;
+    case 'changeColor':
+      html += `<div class="prop-row"><span class="prop-label">颜色</span><input class="prop-color" type="color" value="${p.color||'#ff0000'}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'color',this.value)"></div>`;
+      break;
+    case 'showText':
+      html += `<div class="prop-row"><span class="prop-label">文字</span><input class="prop-input" value="${p.text||'你好'}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'text',this.value)"></div>`;
+      break;
+    case 'setVelocity':
+      html += `<div class="prop-row"><span class="prop-label">VX</span><input class="prop-input prop-input-sm" type="number" value="${p.vx||0}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'vx',this.value)"></div>
+        <div class="prop-row"><span class="prop-label">VY</span><input class="prop-input prop-input-sm" type="number" value="${p.vy||0}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'vy',this.value)"></div>`;
+      break;
+    case 'takeDamage':
+      html += `<div class="prop-row"><span class="prop-label">伤害</span><input class="prop-input prop-input-sm" type="number" value="${p.amount||10}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'amount',this.value)"></div>
+        <div class="prop-row"><span class="prop-label">目标</span><select class="prop-select" style="font-size:11px" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'target',this.value)">
+        <option value="self" ${p.target==='self'?'selected':''}>自身</option><option value="other" ${p.target==='other'?'selected':''}>碰撞对象</option></select></div>`;
+      break;
+    case 'heal':
+      html += `<div class="prop-row"><span class="prop-label">恢复</span><input class="prop-input prop-input-sm" type="number" value="${p.amount||20}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'amount',this.value)"></div>`;
+      break;
+    case 'teleport':
+      html += `<div class="prop-row"><span class="prop-label">X</span><input class="prop-input prop-input-sm" type="number" value="${p.teleportX||0}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'teleportX',this.value)"></div>
+        <div class="prop-row"><span class="prop-label">Y</span><input class="prop-input prop-input-sm" type="number" value="${p.teleportY||0}" onchange="updateActionParam('${obj.id}',${evIdx},${actIdx},'teleportY',this.value)"></div>`;
+      break;
+    // winGame, loseGame - no params needed
+  }
+  return html;
+}
+
+function toggleAddEventMenu() {
+  const menu = document.getElementById('addEventMenu');
+  if (menu) menu.classList.toggle('hidden');
+}
+
+function addEvent(objId, triggerType) {
+  const obj = findObj(objId);
+  if (!obj) return;
+  obj.events.push({ trigger: triggerType, triggerParams: {}, actions: [] });
+  updateEventsPanel(obj);
+}
+
+function removeEvent(objId, evIdx) {
+  const obj = findObj(objId);
+  if (!obj) return;
+  obj.events.splice(evIdx, 1);
+  updateEventsPanel(obj);
+}
+
+function updateTriggerParam(objId, evIdx, param, value) {
+  const obj = findObj(objId);
+  if (!obj || !obj.events[evIdx]) return;
+  if (!obj.events[evIdx].triggerParams) obj.events[evIdx].triggerParams = {};
+  obj.events[evIdx].triggerParams[param] = value;
+}
+
+function showAddActionMenu(objId, evIdx) {
+  const menu = document.getElementById(`addActionMenu_${objId}_${evIdx}`);
+  if (menu) menu.classList.toggle('hidden');
+}
+
+function addAction(objId, evIdx, actionType) {
+  const obj = findObj(objId);
+  if (!obj || !obj.events[evIdx]) return;
+  obj.events[evIdx].actions.push({ type: actionType, params: {} });
+  updateEventsPanel(obj);
+}
+
+function removeAction(objId, evIdx, actIdx) {
+  const obj = findObj(objId);
+  if (!obj || !obj.events[evIdx]) return;
+  obj.events[evIdx].actions.splice(actIdx, 1);
+  updateEventsPanel(obj);
+}
+
+function updateActionParam(objId, evIdx, actIdx, param, value) {
+  const obj = findObj(objId);
+  if (!obj || !obj.events[evIdx] || !obj.events[evIdx].actions[actIdx]) return;
+  if (!obj.events[evIdx].actions[actIdx].params) obj.events[evIdx].actions[actIdx].params = {};
+  obj.events[evIdx].actions[actIdx].params[param] = value;
+}
+
+// ===== RIGHT SIDEBAR TABS =====
+$$('.right-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('.right-tab').forEach(t => t.classList.remove('active'));
+    $$('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $(`#tab${tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)}`).classList.add('active');
+  });
+});
+
+// ===== ZOOM =====
+$('#zoomIn').addEventListener('click', () => {
+  state.zoom = Math.min(2, state.zoom + 0.1);
+  applyZoom();
+});
+$('#zoomOut').addEventListener('click', () => {
+  state.zoom = Math.max(0.3, state.zoom - 0.1);
+  applyZoom();
+});
+function applyZoom() {
+  canvas.style.transform = `scale(${state.zoom})`;
+  canvas.style.transformOrigin = 'center center';
+  $('#zoomVal').textContent = Math.round(state.zoom * 100) + '%';
+}
+
+// ===== SAVE / LOAD =====
+function saveProject() {
+  const data = {
+    objects: state.objects.map(o => ({
+      id: o.id, type: o.type, name: o.name, x: o.x, y: o.y, w: o.w, h: o.h,
+      color: o.color, visible: o.visible, locked: o.locked,
+      gravity: o.gravity, bounce: o.bounce, friction: o.friction,
+      health: o.maxHealth, maxHealth: o.maxHealth, speed: o.speed, jumpForce: o.jumpForce,
+      controllable: o.controllable, aiBehavior: o.aiBehavior, patrolRange: o.patrolRange,
+      moving: o.moving, moveRange: o.moveRange, moveSpeed: o.moveSpeed, moveAxis: o.moveAxis,
+      damage: o.damage, scoreValue: o.scoreValue,
+      targetX: o.targetX, targetY: o.targetY, winGame: o.winGame,
+      text: o.text, fontSize: o.fontSize, fontColor: o.fontColor, displayType: o.displayType,
+      direction: o.direction, lifetime: o.lifetime,
+      color1: o.color1, color2: o.color2, gradientDir: o.gradientDir, parallax: o.parallax,
+      keyId: o.keyId, healAmount: o.healAmount, animation: o.animation, btnText: o.btnText,
+      events: o.events
+    })),
+    canvasW: canvas.width, canvasH: canvas.height, nextId: state.nextId
+  };
+  localStorage.setItem('gameforge_project', JSON.stringify(data));
+  toast('项目已保存!', 'success');
+}
+
+function loadProject() {
+  const raw = localStorage.getItem('gameforge_project');
+  if (!raw) { toast('没有找到已保存的项目', 'error'); return; }
+  try {
+    const data = JSON.parse(raw);
+    state.objects = [];
+    state.selectedIds = [];
+    state.nextId = data.nextId || 1;
+    if (data.canvasW) canvas.width = data.canvasW;
+    if (data.canvasH) canvas.height = data.canvasH;
+    data.objects.forEach(od => {
+      const def = OBJ_TYPES[od.type];
+      if (!def) return;
+      const obj = createObject(od.type, od.x, od.y);
+      Object.keys(od).forEach(k => { if (k !== 'id') obj[k] = od[k]; });
+      obj.patrolOrigin = obj.x;
+    });
+    renderEditor();
+    updatePropsPanel();
+    toast('项目已加载!', 'success');
+  } catch(e) {
+    toast('加载失败: ' + e.message, 'error');
+  }
+}
+
+function shareProject() {
+  const data = {
+    objects: state.objects.map(o => ({
+      type: o.type, x: o.x, y: o.y, w: o.w, h: o.h,
+      color: o.color, visible: o.visible, gravity: o.gravity, bounce: o.bounce,
+      health: o.maxHealth, speed: o.speed, jumpForce: o.jumpForce,
+      controllable: o.controllable, aiBehavior: o.aiBehavior, patrolRange: o.patrolRange,
+      moving: o.moving, moveRange: o.moveRange, moveSpeed: o.moveSpeed, moveAxis: o.moveAxis,
+      damage: o.damage, scoreValue: o.scoreValue,
+      targetX: o.targetX, targetY: o.targetY, winGame: o.winGame,
+      text: o.text, fontSize: o.fontSize, fontColor: o.fontColor,
+      direction: o.direction, lifetime: o.lifetime,
+      color1: o.color1, color2: o.color2, gradientDir: o.gradientDir,
+      keyId: o.keyId, healAmount: o.healAmount, events: o.events, name: o.name, btnText: o.btnText
+    })),
+    canvasW: canvas.width, canvasH: canvas.height
+  };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  const url = location.origin + location.pathname + '#project=' + encoded;
+  navigator.clipboard.writeText(url).then(() => {
+    toast('分享链接已复制到剪贴板!', 'success');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    toast('分享链接已复制!', 'success');
+  });
+}
+
+function loadFromHash() {
+  const hash = location.hash;
+  if (!hash.startsWith('#project=')) return false;
+  try {
+    const encoded = hash.substring(9);
+    const data = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    state.objects = [];
+    state.selectedIds = [];
+    if (data.canvasW) canvas.width = data.canvasW;
+    if (data.canvasH) canvas.height = data.canvasH;
+    data.objects.forEach(od => {
+      const obj = createObject(od.type, od.x, od.y);
+      Object.keys(od).forEach(k => { obj[k] = od[k]; });
+      obj.patrolOrigin = obj.x;
+    });
+    renderEditor();
+    updatePropsPanel();
+    toast('已从分享链接加载项目!', 'success');
+    return true;
+  } catch(e) {
+    toast('分享链接加载失败', 'error');
+    return false;
+  }
+}
+
+// ===== TEMPLATES =====
+function loadTemplate(name) {
+  state.objects = [];
+  state.selectedIds = [];
+  state.nextId = 1;
+  canvas.width = 800;
+  canvas.height = 600;
+
+  switch(name) {
+    case 'platform': loadPlatformTemplate(); break;
+    case 'shooter': loadShooterTemplate(); break;
+    case 'maze': loadMazeTemplate(); break;
+    case 'breakout': loadBreakoutTemplate(); break;
+    default: return;
+  }
+
+  renderEditor();
+  updatePropsPanel();
+  toast(`已加载模板: ${$('#templateSelect').selectedOptions[0].textContent}`, 'success');
+}
+
+function loadPlatformTemplate() {
+  // Background
+  createObject('bgGradient', 0, 0, { color1: '#0f0c29', color2: '#302b63', w: 800, h: 600, gradientDir: 'vertical' });
+
+  // Ground
+  createObject('platform', 0, 560, { w: 800, h: 40, color: '#4a7c59', name: '地面' });
+
+  // Platforms
+  createObject('platform', 120, 440, { w: 120, h: 20, color: '#5a8a69', name: '平台1' });
+  createObject('platform', 320, 360, { w: 100, h: 20, color: '#5a8a69', name: '平台2' });
+  createObject('platform', 520, 300, { w: 140, h: 20, color: '#5a8a69', moving: true, moveRange: 60, moveSpeed: 40, moveAxis: 'x', name: '移动平台' });
+  createObject('platform', 340, 220, { w: 100, h: 20, color: '#5a8a69', name: '平台3' });
+  createObject('platform', 140, 160, { w: 120, h: 20, color: '#5a8a69', name: '平台4' });
+
+  // Player
+  const player = createObject('player', 60, 500, { name: '玩家', speed: 220, jumpForce: 420, maxHealth: 100, health: 100 });
+  player.events = [
+    { trigger: 'keyPress', triggerParams: { key: 'shoot' }, actions: [
+      { type: 'spawn', params: { objectType: 'projectile' } },
+      { type: 'playSound', params: { sound: 'shoot' } }
+    ]}
+  ];
+
+  // Enemies
+  createObject('enemy', 350, 320, { name: '巡逻敌人', aiBehavior: 'patrol', patrolRange: 80, speed: 60, maxHealth: 30, health: 30 });
+  createObject('enemy', 160, 120, { name: '追踪敌人', aiBehavior: 'chase', speed: 40, maxHealth: 50, health: 50, gravity: false });
+
+  // Collectibles
+  createObject('collectible', 170, 400, { name: '星星1', scoreValue: 10 });
+  createObject('collectible', 360, 320, { name: '星星2', scoreValue: 10 });
+  createObject('coin', 560, 260, { name: '金币1', scoreValue: 5 });
+  createObject('coin', 590, 260, { name: '金币2', scoreValue: 5 });
+  createObject('coin', 380, 180, { name: '金币3', scoreValue: 5 });
+  createObject('collectible', 180, 120, { name: '星星3', scoreValue: 15 });
+  createObject('healthPack', 500, 400, { name: '生命包', healAmount: 25 });
+
+  // Portal (win condition)
+  createObject('portal', 160, 100, { name: '终点传送门', targetX: 100, targetY: 100, winGame: true });
+
+  // Spikes
+  createObject('spike', 240, 536, { w: 40, h: 24, name: '尖刺1', damage: 20 });
+  createObject('spike', 440, 536, { w: 40, h: 24, name: '尖刺2', damage: 20 });
+
+  // Text
+  createObject('text', 10, 10, { w: 200, h: 28, name: '标题', text: '🎮 平台跳跃', fontSize: 20, fontColor: '#f1c40f' });
+}
+
+function loadShooterTemplate() {
+  // Background
+  createObject('bgGradient', 0, 0, { color1: '#000428', color2: '#004e92', w: 800, h: 600, gradientDir: 'radial', name: '太空背景' });
+
+  // Player (spaceship)
+  const player = createObject('player', 380, 520, { name: '飞船', emoji: '🚀', speed: 250, jumpForce: 0, gravity: false, controllable: true, maxHealth: 100, health: 100, w: 44, h: 44 });
+  player.events = [
+    { trigger: 'keyPress', triggerParams: { key: 'shoot' }, actions: [
+      { type: 'spawn', params: { objectType: 'projectile' } },
+      { type: 'playSound', params: { sound: 'shoot' } }
+    ]}
+  ];
+
+  // Enemies (coming from top)
+  createObject('enemy', 100, 40, { name: '敌舰1', emoji: '👽', w: 36, h: 36, aiBehavior: 'patrol', patrolRange: 100, speed: 50, gravity: false, maxHealth: 30, health: 30 });
+  createObject('enemy', 300, 60, { name: '敌舰2', emoji: '👾', w: 36, h: 36, aiBehavior: 'patrol', patrolRange: 150, speed: 70, gravity: false, maxHealth: 30, health: 30 });
+  createObject('enemy', 550, 30, { name: '敌舰3', emoji: '👽', w: 36, h: 36, aiBehavior: 'patrol', patrolRange: 120, speed: 60, gravity: false, maxHealth: 40, health: 40 });
+  createObject('enemy', 680, 80, { name: '敌舰4', emoji: '👾', w: 36, h: 36, aiBehavior: 'chase', speed: 30, gravity: false, maxHealth: 50, health: 50 });
+
+  // Collectibles (power-ups)
+  createObject('collectible', 200, 200, { name: '能量星', scoreValue: 20 });
+  createObject('collectible', 500, 150, { name: '能量星', scoreValue: 20 });
+  createObject('healthPack', 650, 300, { name: '修理包', healAmount: 30 });
+
+  // Projectile template
+  createObject('projectile', 390, 480, { name: '子弹模板', direction: 'up', speed: 400, damage: 30, lifetime: 3, w: 12, h: 16 });
+
+  // Text
+  createObject('text', 10, 10, { w: 200, h: 28, name: '标题', text: '🚀 太空射击', fontSize: 20, fontColor: '#3498db' });
+
+  // Bottom border
+  createObject('platform', 0, 580, { w: 800, h: 20, color: '#004e92', name: '边界' });
+}
+
+function loadMazeTemplate() {
+  // Background
+  createObject('bgGradient', 0, 0, { color1: '#1a0a2e', color2: '#3d1e6d', w: 800, h: 600, gradientDir: 'vertical', name: '迷宫背景' });
+
+  // Border walls
+  createObject('wall', 0, 0, { w: 800, h: 20, color: '#5b3a8c', name: '上墙' });
+  createObject('wall', 0, 580, { w: 800, h: 20, color: '#5b3a8c', name: '下墙' });
+  createObject('wall', 0, 0, { w: 20, h: 600, color: '#5b3a8c', name: '左墙' });
+  createObject('wall', 780, 0, { w: 20, h: 600, color: '#5b3a8c', name: '右墙' });
+
+  // Internal maze walls
+  const wallColor = '#6b4f96';
+  createObject('wall', 100, 20, { w: 20, h: 200, color: wallColor, name: '内墙1' });
+  createObject('wall', 100, 280, { w: 20, h: 100, color: wallColor, name: '内墙2' });
+  createObject('wall', 200, 120, { w: 200, h: 20, color: wallColor, name: '内墙3' });
+  createObject('wall', 300, 20, { w: 20, h: 120, color: wallColor, name: '内墙4' });
+  createObject('wall', 300, 200, { w: 20, h: 200, color: wallColor, name: '内墙5' });
+  createObject('wall', 400, 120, { w: 20, h: 160, color: wallColor, name: '内墙6' });
+  createObject('wall', 400, 350, { w: 200, h: 20, color: wallColor, name: '内墙7' });
+  createObject('wall', 500, 20, { w: 20, h: 200, color: wallColor, name: '内墙8' });
+  createObject('wall', 500, 280, { w: 20, h: 80, color: wallColor, name: '内墙9' });
+  createObject('wall', 600, 200, { w: 20, h: 180, color: wallColor, name: '内墙10' });
+  createObject('wall', 600, 450, { w: 180, h: 20, color: wallColor, name: '内墙11' });
+  createObject('wall', 200, 400, { w: 120, h: 20, color: wallColor, name: '内墙12' });
+  createObject('wall', 200, 400, { w: 20, h: 180, color: wallColor, name: '内墙13' });
+  createObject('wall', 400, 450, { w: 20, h: 130, color: wallColor, name: '内墙14' });
+  createObject('wall', 680, 350, { w: 100, h: 20, color: wallColor, name: '内墙15' });
+
+  // Player (top-down, no gravity)
+  const player = createObject('player', 40, 40, { name: '探险者', emoji: '🧙', w: 32, h: 32, speed: 160, jumpForce: 0, gravity: false, maxHealth: 100, health: 100 });
+  player.events = [];
+
+  // Keys to collect
+  createObject('key', 240, 60, { name: '红钥匙', keyId: 'red' });
+  createObject('key', 440, 200, { name: '蓝钥匙', keyId: 'blue' });
+  createObject('key', 680, 300, { name: '绿钥匙', keyId: 'green' });
+
+  // Collectibles
+  createObject('collectible', 140, 300, { name: '宝石1', scoreValue: 15 });
+  createObject('collectible', 350, 450, { name: '宝石2', scoreValue: 15 });
+  createObject('collectible', 550, 500, { name: '宝石3', scoreValue: 15 });
+  createObject('coin', 160, 160, { name: '金币1', scoreValue: 5 });
+  createObject('coin', 450, 300, { name: '金币2', scoreValue: 5 });
+  createObject('coin', 660, 150, { name: '金币3', scoreValue: 5 });
+  createObject('coin', 340, 540, { name: '金币4', scoreValue: 5 });
+
+  // Enemies (ghosts)
+  createObject('enemy', 200, 250, { name: '幽灵1', emoji: '👻', w: 30, h: 30, aiBehavior: 'patrol', patrolRange: 80, speed: 50, gravity: false, maxHealth: 999, health: 999 });
+  createObject('enemy', 500, 420, { name: '幽灵2', emoji: '👻', w: 30, h: 30, aiBehavior: 'chase', speed: 35, gravity: false, maxHealth: 999, health: 999 });
+  createObject('enemy', 650, 100, { name: '幽灵3', emoji: '👻', w: 30, h: 30, aiBehavior: 'patrol', patrolRange: 100, speed: 60, gravity: false, maxHealth: 999, health: 999 });
+
+  // Health
+  createObject('healthPack', 300, 500, { name: '药水', healAmount: 30 });
+
+  // Portal (exit)
+  createObject('portal', 720, 520, { name: '迷宫出口', w: 40, h: 40, targetX: 720, targetY: 520, winGame: true });
+
+  // Text
+  createObject('text', 300, 280, { w: 200, h: 24, name: '提示', text: '🏰 收集钥匙，找到出口!', fontSize: 16, fontColor: '#f1c40f' });
+}
+
+function loadBreakoutTemplate() {
+  // Background
+  createObject('bgGradient', 0, 0, { color1: '#0c0c1d', color2: '#1a1a3e', w: 800, h: 600, gradientDir: 'vertical', name: '背景' });
+
+  // Player paddle
+  const player = createObject('player', 340, 560, { name: '挡板', emoji: '🟦', w: 120, h: 16, speed: 300, jumpForce: 0, gravity: false, controllable: true, maxHealth: 100, health: 100 });
+  player.events = [];
+
+  // "Ball" - projectile that bounces
+  const ball = createObject('projectile', 388, 540, { name: '球', emoji: '⚪', w: 16, h: 16, direction: 'up', speed: 280, damage: 999, lifetime: 600 });
+  ball._breakoutBall = true;
+  ball.vx = 100;
+  ball.vy = -280;
+
+  // Bricks
+  const brickColors = ['#e94560', '#f39c12', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6'];
+  const brickW = 70;
+  const brickH = 24;
+  const startX = 35;
+  const startY = 40;
+  for (let row = 0; row < 6; row++) {
+    for (let col = 0; col < 10; col++) {
+      createObject('enemy', startX + col * (brickW + 6), startY + row * (brickH + 6), {
+        w: brickW, h: brickH, color: brickColors[row],
+        name: `砖块_${row}_${col}`, emoji: '',
+        aiBehavior: 'stationary', speed: 0, gravity: false,
+        maxHealth: 10 + row * 5, health: 10 + row * 5,
+        patrolRange: 0
+      });
+    }
+  }
+
+  // Walls (to keep ball bouncing)
+  createObject('wall', 0, 0, { w: 10, h: 560, color: '#333', name: '左墙' });
+  createObject('wall', 790, 0, { w: 10, h: 560, color: '#333', name: '右墙' });
+  createObject('wall', 0, 0, { w: 800, h: 10, color: '#333', name: '顶墙' });
+
+  // Text
+  createObject('text', 300, 10, { w: 200, h: 24, name: '标题', text: '🧱 打砖块', fontSize: 18, fontColor: '#f1c40f' });
+
+  // Note: For the breakout template, we need custom ball behavior
+  // The ball will be a special projectile that bounces off walls/paddle
+}
+
+// ===== BUTTON EVENTS =====
+$('#btnPlay').addEventListener('click', startGame);
+$('#btnStop').addEventListener('click', stopGame);
+$('#hudStop').addEventListener('click', stopGame);
+$('#btnSave').addEventListener('click', saveProject);
+$('#btnLoad').addEventListener('click', loadProject);
+$('#btnShare').addEventListener('click', shareProject);
+$('#overlayRestart').addEventListener('click', restartGame);
+$('#overlayBack').addEventListener('click', stopGame);
+$('#templateSelect').addEventListener('change', function() {
+  if (this.value) {
+    if (state.objects.length > 0) {
+      if (!confirm('加载模板将清除当前所有对象，确定继续？')) {
+        this.value = '';
+        return;
+      }
+    }
+    loadTemplate(this.value);
+  }
+});
+
+// ===== OBJECT COUNT =====
+function updateObjectCount() {
+  $('#objectCount').textContent = `对象: ${state.objects.length}`;
+  // Update layer list
+  const names = state.objects.slice(0, 5).map(o => o.name).join(', ');
+  const more = state.objects.length > 5 ? ` +${state.objects.length - 5}` : '';
+  $('#layerList').textContent = names + more;
+}
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', e => {
+  if (state.playing) return;
+  if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT') return;
+
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveProject(); }
+  if (e.ctrlKey && e.key === 'd') { e.preventDefault(); duplicateSelected(); renderEditor(); }
+  if (e.key === 'Escape') { state.selectedIds = []; renderEditor(); updatePropsPanel(); }
+});
+
+// ===== BREAKOUT BALL BOUNCE LOGIC =====
+function updateBreakoutBall(obj, dt) {
+  if (obj.type !== 'projectile' || !obj._breakoutBall) return false;
+  // Move ball
+  obj.x += obj.vx * dt;
+  obj.y += obj.vy * dt;
+  // Bounce off walls
+  state.objects.forEach(other => {
+    if (other === obj || !other.alive) return;
+    if (other.type !== 'wall' && other.type !== 'platform' && other.type !== 'player' && other.type !== 'enemy') return;
+    if (!aabb(obj, other)) return;
+    // Determine bounce direction
+    const overlapLeft = obj.x + obj.w - other.x;
+    const overlapRight = other.x + other.w - obj.x;
+    const overlapTop = obj.y + obj.h - other.y;
+    const overlapBottom = other.y + other.h - obj.y;
+    const minOverlapX = Math.min(overlapLeft, overlapRight);
+    const minOverlapY = Math.min(overlapTop, overlapBottom);
+    if (minOverlapX < minOverlapY) {
+      obj.vx = -obj.vx;
+      obj.x += (overlapLeft < overlapRight ? -1 : 1);
+    } else {
+      obj.vy = -obj.vy;
+      obj.y += (overlapTop < overlapBottom ? -1 : 1);
+    }
+    // Paddle angle adjustment
+    if (other.type === 'player') {
+      const hitPos = (obj.x + obj.w/2 - other.x) / other.w;
+      obj.vx = (hitPos - 0.5) * 500;
+      obj.vy = -Math.abs(obj.vy);
+    }
+    // Hit brick
+    if (other.type === 'enemy') {
+      other.health -= obj.damage;
+      if (other.health <= 0) {
+        other.alive = false;
+        state.score += 10;
+        spawnParticles(other.x + other.w/2, other.y + other.h/2, other.color, 6);
+      }
+      audio.play('hit');
+    }
+  });
+  // Ball lost (fell below screen)
+  if (obj.y > canvas.height) {
+    // Lose a life
+    const player = getPlayer();
+    if (player) {
+      player.health -= 25;
+      state.health = player.health;
+      screenShake(10);
+      if (player.health <= 0) { player.alive = false; gameOver(false); }
+      else {
+        // Respawn ball above paddle
+        obj.alive = true;
+        obj.x = player.x + player.w / 2 - obj.w / 2;
+        obj.y = player.y - obj.h - 5;
+        obj.vx = (Math.random() - 0.5) * 200;
+        obj.vy = -280;
+      }
+    } else {
+      obj.alive = false;
+    }
+  }
+  return true; // Handled
+}
+
+// ===== INITIALIZE =====
+function init() {
+  buildPalette();
+  // Try loading from hash first
+  if (!loadFromHash()) {
+    // Try loading from localStorage
+    const saved = localStorage.getItem('gameforge_project');
+    if (saved) {
+      loadProject();
+    } else {
+      // Default: load platform template
+      loadTemplate('platform');
+      $('#templateSelect').value = 'platform';
+    }
+  }
+  renderEditor();
+
+  // Show welcome on first visit
+  if (!localStorage.getItem('gameforge_welcomed')) {
+    const modal = $('#welcomeModal');
+    if (modal) {
+      modal.style.display = 'flex';
+      $('#welcomeStart').addEventListener('click', () => {
+        modal.style.display = 'none';
+        localStorage.setItem('gameforge_welcomed', '1');
+      });
+    }
+  }
+}
+
+init();
+
+// ===== CANVAS RESIZE OBSERVER =====
+const resizeObserver = new ResizeObserver(() => {
+  if (!state.playing) renderEditor();
+});
+resizeObserver.observe($('#canvasContainer'));
+
+// ===== CONTEXT MENU PREVENTION =====
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+</script>
+</body>
+</html>
