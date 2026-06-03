@@ -163,6 +163,14 @@ body{display:flex;flex-direction:column}
 .resize-handle.se{bottom:-4px;right:-4px;cursor:se-resize}
 .selection-box{position:absolute;border:1.5px solid var(--accent);background:rgba(233,69,96,0.05);pointer-events:none;z-index:15}
 
+/* ===== CONTEXT MENU ===== */
+.ctx-menu{position:fixed;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius);padding:4px;min-width:160px;z-index:200;box-shadow:var(--shadow);display:none}
+.ctx-menu.visible{display:block}
+.ctx-item{padding:7px 12px;font-size:12px;color:var(--text-secondary);cursor:pointer;border-radius:4px;display:flex;align-items:center;gap:8px;transition:var(--transition)}
+.ctx-item:hover{background:var(--bg-tertiary);color:var(--text-primary)}
+.ctx-item.danger:hover{background:rgba(233,69,96,0.15);color:var(--accent)}
+.ctx-sep{height:1px;background:var(--border);margin:4px 0}
+
 /* ===== ANIMATIONS ===== */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
 .playing .header{background:linear-gradient(90deg,var(--bg-secondary),rgba(46,204,113,0.15),var(--bg-secondary))}
@@ -180,6 +188,11 @@ body{display:flex;flex-direction:column}
     <option value="shooter">🚀 太空射击</option>
     <option value="maze">🏰 迷宫探索</option>
     <option value="breakout">🧱 打砖块</option>
+    <option value="runner">🏃 无尽跑酷</option>
+    <option value="dodge">💀 弹幕躲避</option>
+    <option value="puzzle">🧩 推箱子</option>
+    <option value="fight">⚔️ 竞技场</option>
+    <option value="collect">🍎 水果忍者</option>
   </select>
   <div class="header-sep"></div>
   <button class="hbtn hbtn-play" id="btnPlay" title="开始测试游戏">▶ 测试游戏</button>
@@ -289,9 +302,11 @@ body{display:flex;flex-direction:column}
     </div>
     <div style="font-size:11px;color:var(--text-muted);margin-bottom:20px">
       ⌨️ 快捷键: <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Ctrl+S</kbd> 保存 &nbsp;
+      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Ctrl+Z</kbd> 撤销 &nbsp;
+      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Ctrl+Y</kbd> 重做 &nbsp;
       <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Delete</kbd> 删除 &nbsp;
-      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Esc</kbd> 取消选择 &nbsp;
-      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Ctrl+D</kbd> 复制
+      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Ctrl+D</kbd> 复制 &nbsp;
+      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Esc</kbd> 取消
     </div>
     <button id="welcomeStart" style="padding:14px 48px;background:linear-gradient(135deg,var(--accent),#ff6b81);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 20px rgba(233,69,96,0.4)">🚀 开始创作</button>
   </div>
@@ -299,6 +314,17 @@ body{display:flex;flex-direction:column}
 
 <!-- TOAST -->
 <div class="toast-container" id="toastContainer"></div>
+<!-- CONTEXT MENU -->
+<div class="ctx-menu" id="ctxMenu">
+  <div class="ctx-item" data-action="copy">📋 复制 <span style="color:var(--text-muted);margin-left:auto;font-size:10px">Ctrl+D</span></div>
+  <div class="ctx-item" data-action="paste">📄 粘贴</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" data-action="top">⬆️ 置顶</div>
+  <div class="ctx-item" data-action="bottom">⬇️ 置底</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" data-action="lock">🔒 锁定/解锁</div>
+  <div class="ctx-item danger" data-action="delete">🗑️ 删除 <span style="color:var(--text-muted);margin-left:auto;font-size:10px">Del</span></div>
+</div>
 <!-- DRAG GHOST -->
 <div class="drag-ghost" id="dragGhost" style="display:none"></div>
 
@@ -498,8 +524,47 @@ const state = {
   nextId: 1,
   copiedData: null,
   undoStack: [],
-  gridSize: 20
+  gridSize: 20,
+  _winTriggered: false,
 };
+
+// ===== UNDO/REDO =====
+const undoStack = [];
+const redoStack = [];
+const MAX_UNDO = 50;
+
+function saveUndoState() {
+  const snapshot = JSON.stringify(state.objects.map(o => ({...o, events: JSON.parse(JSON.stringify(o.events))})));
+  undoStack.push(snapshot);
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+  redoStack.length = 0;
+}
+
+function undo() {
+  if (undoStack.length === 0) return;
+  const current = JSON.stringify(state.objects.map(o => ({...o, events: JSON.parse(JSON.stringify(o.events))})));
+  redoStack.push(current);
+  const prev = JSON.parse(undoStack.pop());
+  state.objects = prev;
+  state.selectedIds = [];
+  renderEditor();
+  updatePropsPanel();
+  updateObjectCount();
+  toast('已撤销', 'info');
+}
+
+function redo() {
+  if (redoStack.length === 0) return;
+  const current = JSON.stringify(state.objects.map(o => ({...o, events: JSON.parse(JSON.stringify(o.events))})));
+  undoStack.push(current);
+  const next = JSON.parse(redoStack.pop());
+  state.objects = next;
+  state.selectedIds = [];
+  renderEditor();
+  updatePropsPanel();
+  updateObjectCount();
+  toast('已重做', 'info');
+}
 
 // ===== CANVAS & RENDERING =====
 const canvas = $('#gameCanvas');
@@ -565,6 +630,7 @@ function createObject(type, x, y, extraProps = {}) {
     alive: true,
     collected: false,
     invincibleTimer: 0,
+    _hovered: false,
     events: [],
     ...extraProps
   };
@@ -574,6 +640,7 @@ function createObject(type, x, y, extraProps = {}) {
 }
 
 function deleteObject(id) {
+  saveUndoState();
   state.objects = state.objects.filter(o => o.id !== id);
   state.selectedIds = state.selectedIds.filter(sid => sid !== id);
   updateObjectCount();
@@ -751,6 +818,19 @@ function drawObject(obj, isEditor) {
   }
 
   ctx.globalAlpha = 1;
+
+  // Hover name label
+  if (isEditor && obj._hovered && obj.type !== 'bgGradient' && obj.type !== 'bgSolid') {
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.font = '10px sans-serif';
+    const tw = ctx.measureText(obj.name).width + 8;
+    ctx.fillRect(x, y - 18, tw, 16);
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(obj.name, x + 4, y - 10);
+  }
+
   ctx.restore();
 }
 
@@ -805,6 +885,7 @@ function startGame() {
   gameTime = 0;
   state.score = 0;
   state.health = player.health;
+  state._winTriggered = false;
   spawnedProjectiles = [];
 
   // Reset objects
@@ -918,18 +999,23 @@ function updateGame(dt) {
 
   // Input
   let moveX = 0;
+  let moveY = 0;
   if (keys['ArrowLeft'] || keys['a'] || keys['A']) moveX = -1;
   if (keys['ArrowRight'] || keys['d'] || keys['D']) moveX = 1;
+  if (keys['ArrowDown'] || keys['s'] || keys['S']) moveY = 1;
+  if (keys['ArrowUp'] || keys['w'] || keys['W']) moveY = -1;
 
   // Player movement
   if (player.controllable) {
     player.vx = moveX * player.speed;
+    if (!player.gravity) player.vy = moveY * player.speed;
     // Key press events
     if (keysJustPressed['ArrowUp'] || keysJustPressed['w'] || keysJustPressed['W'] || keysJustPressed[' ']) {
-      if (player.grounded) {
+      if (player.gravity && player.grounded && player.jumpForce > 0) {
         player.vy = -player.jumpForce;
         player.grounded = false;
         audio.play('jump');
+        spawnParticles(player.x + player.w/2, player.y + player.h, '#ffffff', 4);
       }
       triggerKeyEvent(player, 'up');
     }
@@ -1149,6 +1235,18 @@ function updateGame(dt) {
       }
     });
   });
+
+  // Auto-win: check if all collectibles/coins are collected
+  if (state.score > 0) {
+    const remaining = state.objects.filter(o => (o.type === 'collectible' || o.type === 'coin') && o.alive && !o.collected);
+    if (remaining.length === 0 && !state._winTriggered) {
+      const hasPortal = state.objects.some(o => o.type === 'portal' && o.alive && !o.collected);
+      if (!hasPortal) {
+        state._winTriggered = true;
+        setTimeout(() => gameOver(true), 500);
+      }
+    }
+  }
 
   // Final bounds clamp (after all collision knockbacks)
   const p = getPlayer();
@@ -1374,6 +1472,7 @@ function buildPalette() {
       item.addEventListener('dblclick', () => {
         const cx = canvas.width / 2 - def.w / 2;
         const cy = canvas.height / 2 - def.h / 2;
+        saveUndoState();
         const obj = createObject(typeKey, cx, cy);
         state.selectedIds = [obj.id];
         renderEditor();
@@ -1416,6 +1515,7 @@ canvas.addEventListener('drop', e => {
   const x = (e.clientX - rect.left) / state.zoom;
   const y = (e.clientY - rect.top) / state.zoom;
   const def = OBJ_TYPES[typeKey];
+  saveUndoState();
   const obj = createObject(typeKey, x - def.w/2, y - def.h/2);
   state.selectedIds = [obj.id];
   renderEditor();
@@ -1528,6 +1628,24 @@ canvas.addEventListener('mousemove', e => {
     });
     renderEditor();
     updatePropsPanel();
+  }
+
+  // Hover detection (don't re-render, just mark)
+  if (!isDraggingObj && !resizeHandle && !state.playing) {
+    let hoveredObj = null;
+    for (let i = state.objects.length - 1; i >= 0; i--) {
+      const o = state.objects[i];
+      if (mx >= o.x && mx <= o.x + o.w && my >= o.y && my <= o.y + o.h) {
+        hoveredObj = o;
+        break;
+      }
+    }
+    const prevHovered = state.objects.find(o => o._hovered);
+    if (prevHovered !== hoveredObj) {
+      if (prevHovered) prevHovered._hovered = false;
+      if (hoveredObj) hoveredObj._hovered = true;
+      renderEditor();
+    }
   }
 });
 
@@ -1759,6 +1877,8 @@ function deleteSelected() {
 }
 
 function duplicateSelected() {
+  saveUndoState();
+  state.copiedData = state.selectedIds.map(id => { const obj = findObj(id); return obj ? {...obj} : null; }).filter(Boolean);
   const newIds = [];
   state.selectedIds.forEach(id => {
     const obj = findObj(id);
@@ -2121,6 +2241,11 @@ function loadTemplate(name) {
     case 'shooter': loadShooterTemplate(); break;
     case 'maze': loadMazeTemplate(); break;
     case 'breakout': loadBreakoutTemplate(); break;
+    case 'runner': loadRunnerTemplate(); break;
+    case 'dodge': loadDodgeTemplate(); break;
+    case 'puzzle': loadPuzzleTemplate(); break;
+    case 'fight': loadFightTemplate(); break;
+    case 'collect': loadCollectTemplate(); break;
     default: return;
   }
 
@@ -2190,7 +2315,12 @@ function loadShooterTemplate() {
   ];
 
   // Enemies (coming from top)
-  createObject('enemy', 100, 40, { name: '敌舰1', emoji: '👽', w: 36, h: 36, aiBehavior: 'patrol', patrolRange: 100, speed: 50, gravity: false, maxHealth: 30, health: 30 });
+  const e1 = createObject('enemy', 100, 40, { name: '敌舰1', emoji: '👽', w: 36, h: 36, aiBehavior: 'patrol', patrolRange: 100, speed: 50, gravity: false, maxHealth: 30, health: 30 });
+  e1.events = [
+    { trigger: 'timer', triggerParams: { interval: '5' }, actions: [
+      { type: 'playSound', params: { sound: 'shoot' } }
+    ]}
+  ];
   createObject('enemy', 300, 60, { name: '敌舰2', emoji: '👾', w: 36, h: 36, aiBehavior: 'patrol', patrolRange: 150, speed: 70, gravity: false, maxHealth: 30, health: 30 });
   createObject('enemy', 550, 30, { name: '敌舰3', emoji: '👽', w: 36, h: 36, aiBehavior: 'patrol', patrolRange: 120, speed: 60, gravity: false, maxHealth: 40, health: 40 });
   createObject('enemy', 680, 80, { name: '敌舰4', emoji: '👾', w: 36, h: 36, aiBehavior: 'chase', speed: 30, gravity: false, maxHealth: 50, health: 50 });
@@ -2315,6 +2445,127 @@ function loadBreakoutTemplate() {
   // The ball will be a special projectile that bounces off walls/paddle
 }
 
+function loadRunnerTemplate() {
+  createObject('bgGradient', 0, 0, { color1: '#1a0a2e', color2: '#2d1b69', w: 800, h: 600 });
+  createObject('platform', 0, 520, { w: 800, h: 80, color: '#2d2d4e', name: '地面' });
+  createObject('platform', 250, 420, { w: 100, h: 20, color: '#3d3d6e', name: '台阶1' });
+  createObject('platform', 450, 350, { w: 80, h: 20, color: '#3d3d6e', name: '台阶2' });
+  createObject('platform', 600, 280, { w: 100, h: 20, color: '#3d3d6e', name: '台阶3' });
+  createObject('spike', 350, 496, { w: 40, h: 24, damage: 30, name: '尖刺1' });
+  createObject('spike', 550, 496, { w: 40, h: 24, damage: 30, name: '尖刺2' });
+  createObject('spike', 680, 496, { w: 40, h: 24, damage: 30, name: '尖刺3' });
+  const player = createObject('player', 60, 460, { name: '跑者', speed: 260, jumpForce: 450, maxHealth: 100, health: 100 });
+  player.events = [
+    { trigger: 'keyPress', triggerParams: { key: 'shoot' }, actions: [
+      { type: 'spawn', params: { objectType: 'projectile' } },
+      { type: 'playSound', params: { sound: 'shoot' } }
+    ]}
+  ];
+  createObject('coin', 280, 390, { name: '金币1', scoreValue: 10 });
+  createObject('coin', 480, 320, { name: '金币2', scoreValue: 10 });
+  createObject('coin', 630, 250, { name: '金币3', scoreValue: 15 });
+  createObject('collectible', 700, 200, { name: '终点星', scoreValue: 50 });
+  createObject('healthPack', 500, 300, { name: '药水', healAmount: 30 });
+  createObject('portal', 730, 170, { name: '终点', targetX: 730, targetY: 170, winGame: true });
+  createObject('enemy', 400, 480, { name: '巡逻兵', aiBehavior: 'patrol', patrolRange: 60, speed: 80, maxHealth: 30, health: 30 });
+  createObject('text', 10, 10, { w: 200, h: 28, name: '标题', text: '🏃 无尽跑酷', fontSize: 20, fontColor: '#2ecc71' });
+}
+
+function loadDodgeTemplate() {
+  createObject('bgGradient', 0, 0, { color1: '#0a0a1a', color2: '#1a1a3a', w: 800, h: 600 });
+  createObject('wall', 0, 0, { w: 800, h: 10, color: '#333', name: '上墙' });
+  createObject('wall', 0, 590, { w: 800, h: 10, color: '#333', name: '下墙' });
+  createObject('wall', 0, 0, { w: 10, h: 600, color: '#333', name: '左墙' });
+  createObject('wall', 790, 0, { w: 10, h: 600, color: '#333', name: '右墙' });
+  const player = createObject('player', 400, 300, { name: '躲避者', emoji: '😀', w: 30, h: 30, speed: 220, jumpForce: 0, gravity: false, controllable: true, maxHealth: 100, health: 100 });
+  player.events = [];
+  createObject('enemy', 100, 100, { name: '追踪者1', emoji: '💀', w: 28, h: 28, aiBehavior: 'chase', speed: 60, gravity: false, maxHealth: 999, health: 999 });
+  createObject('enemy', 700, 500, { name: '追踪者2', emoji: '💀', w: 28, h: 28, aiBehavior: 'chase', speed: 55, gravity: false, maxHealth: 999, health: 999 });
+  createObject('enemy', 400, 100, { name: '巡逻者1', emoji: '👻', w: 26, h: 26, aiBehavior: 'patrol', patrolRange: 200, speed: 90, gravity: false, maxHealth: 999, health: 999 });
+  createObject('enemy', 200, 450, { name: '巡逻者2', emoji: '👻', w: 26, h: 26, aiBehavior: 'patrol', patrolRange: 150, speed: 100, gravity: false, maxHealth: 999, health: 999 });
+  createObject('collectible', 400, 50, { name: '星星1', scoreValue: 20 });
+  createObject('collectible', 100, 550, { name: '星星2', scoreValue: 20 });
+  createObject('collectible', 700, 50, { name: '星星3', scoreValue: 20 });
+  createObject('collectible', 400, 400, { name: '星星4', scoreValue: 30 });
+  createObject('healthPack', 700, 300, { name: '药水', healAmount: 30 });
+  createObject('text', 280, 10, { w: 240, h: 28, name: '标题', text: '💀 弹幕躲避', fontSize: 20, fontColor: '#e94560' });
+}
+
+function loadPuzzleTemplate() {
+  createObject('bgGradient', 0, 0, { color1: '#1a1a0a', color2: '#2e2e1a', w: 800, h: 600 });
+  createObject('wall', 0, 0, { w: 800, h: 20, color: '#5a5a3a', name: '上墙' });
+  createObject('wall', 0, 580, { w: 800, h: 20, color: '#5a5a3a', name: '下墙' });
+  createObject('wall', 0, 0, { w: 20, h: 600, color: '#5a5a3a', name: '左墙' });
+  createObject('wall', 780, 0, { w: 20, h: 600, color: '#5a5a3a', name: '右墙' });
+  createObject('wall', 200, 200, { w: 200, h: 20, color: '#6a6a4a', name: '内墙1' });
+  createObject('wall', 400, 100, { w: 20, h: 200, color: '#6a6a4a', name: '内墙2' });
+  createObject('wall', 200, 400, { w: 20, h: 180, color: '#6a6a4a', name: '内墙3' });
+  createObject('wall', 500, 300, { w: 200, h: 20, color: '#6a6a4a', name: '内墙4' });
+  createObject('wall', 600, 300, { w: 20, h: 180, color: '#6a6a4a', name: '内墙5' });
+  const player = createObject('player', 40, 40, { name: '推箱人', emoji: '🧑', w: 32, h: 32, speed: 140, jumpForce: 0, gravity: false, maxHealth: 100, health: 100 });
+  player.events = [];
+  createObject('platform', 300, 300, { w: 40, h: 40, color: '#c0392b', name: '箱子1', moving: false });
+  createObject('platform', 500, 500, { w: 40, h: 40, color: '#c0392b', name: '箱子2', moving: false });
+  createObject('collectible', 350, 150, { name: '宝石1', scoreValue: 30 });
+  createObject('collectible', 650, 500, { name: '宝石2', scoreValue: 30 });
+  createObject('collectible', 100, 500, { name: '宝石3', scoreValue: 40 });
+  createObject('coin', 300, 100, { name: '金币1', scoreValue: 5 });
+  createObject('coin', 550, 200, { name: '金币2', scoreValue: 5 });
+  createObject('coin', 700, 450, { name: '金币3', scoreValue: 5 });
+  createObject('portal', 720, 520, { name: '出口', targetX: 720, targetY: 520, winGame: true });
+  createObject('text', 280, 10, { w: 240, h: 28, name: '标题', text: '🧩 推箱子谜题', fontSize: 18, fontColor: '#f1c40f' });
+}
+
+function loadFightTemplate() {
+  createObject('bgGradient', 0, 0, { color1: '#1a0a0a', color2: '#3a1a1a', w: 800, h: 600 });
+  createObject('platform', 0, 560, { w: 800, h: 40, color: '#4a2020', name: '地面' });
+  createObject('platform', 100, 440, { w: 120, h: 20, color: '#5a3030', name: '平台1' });
+  createObject('platform', 580, 440, { w: 120, h: 20, color: '#5a3030', name: '平台2' });
+  createObject('platform', 320, 340, { w: 160, h: 20, color: '#5a3030', name: '中央平台' });
+  createObject('platform', 150, 250, { w: 80, h: 20, color: '#5a3030', name: '高台1' });
+  createObject('platform', 570, 250, { w: 80, h: 20, color: '#5a3030', name: '高台2' });
+  const player = createObject('player', 100, 500, { name: '战士', emoji: '⚔️', speed: 200, jumpForce: 400, maxHealth: 150, health: 150 });
+  player.events = [
+    { trigger: 'keyPress', triggerParams: { key: 'shoot' }, actions: [
+      { type: 'spawn', params: { objectType: 'projectile' } },
+      { type: 'playSound', params: { sound: 'shoot' } }
+    ]}
+  ];
+  createObject('enemy', 600, 500, { name: '战士敌人', emoji: '👹', aiBehavior: 'chase', speed: 100, maxHealth: 80, health: 80, damage: 15 });
+  createObject('enemy', 350, 300, { name: '弓箭手', emoji: '🏹', aiBehavior: 'patrol', patrolRange: 80, speed: 40, maxHealth: 50, health: 50, gravity: false });
+  createObject('enemy', 200, 500, { name: '小兵1', emoji: '👺', aiBehavior: 'patrol', patrolRange: 100, speed: 70, maxHealth: 40, health: 40 });
+  createObject('enemy', 500, 500, { name: '小兵2', emoji: '👺', aiBehavior: 'patrol', patrolRange: 100, speed: 70, maxHealth: 40, health: 40 });
+  createObject('collectible', 400, 300, { name: '能量', scoreValue: 30 });
+  createObject('healthPack', 160, 210, { name: '药水', healAmount: 40 });
+  createObject('coin', 600, 400, { name: '金币', scoreValue: 10 });
+  createObject('coin', 200, 400, { name: '金币', scoreValue: 10 });
+  createObject('text', 280, 10, { w: 240, h: 28, name: '标题', text: '⚔️ 竞技场', fontSize: 20, fontColor: '#e94560' });
+}
+
+function loadCollectTemplate() {
+  createObject('bgGradient', 0, 0, { color1: '#0a1a0a', color2: '#1a3a1a', w: 800, h: 600 });
+  createObject('wall', 0, 0, { w: 800, h: 20, color: '#2a4a2a', name: '上墙' });
+  createObject('wall', 0, 580, { w: 800, h: 20, color: '#2a4a2a', name: '下墙' });
+  createObject('wall', 0, 0, { w: 20, h: 600, color: '#2a4a2a', name: '左墙' });
+  createObject('wall', 780, 0, { w: 20, h: 600, color: '#2a4a2a', name: '右墙' });
+  const player = createObject('player', 400, 300, { name: '忍者', emoji: '🥷', w: 30, h: 30, speed: 250, jumpForce: 0, gravity: false, controllable: true, maxHealth: 100, health: 100 });
+  player.events = [];
+  // Scattered fruits
+  for (let i = 0; i < 8; i++) {
+    const x = 60 + Math.floor(i / 2) * 200;
+    const y = 80 + (i % 2) * 220;
+    createObject('collectible', x, y, { name: `水果${i+1}`, emoji: ['🍎','🍊','🍋','🍇','🍓','🍑','🍉','🫐'][i], scoreValue: 15 });
+  }
+  createObject('coin', 400, 100, { name: '金币1', scoreValue: 5 });
+  createObject('coin', 200, 500, { name: '金币2', scoreValue: 5 });
+  createObject('coin', 600, 500, { name: '金币3', scoreValue: 5 });
+  createObject('enemy', 300, 200, { name: '巡逻兵1', emoji: '💣', w: 26, h: 26, aiBehavior: 'patrol', patrolRange: 150, speed: 80, gravity: false, maxHealth: 999, health: 999 });
+  createObject('enemy', 500, 400, { name: '巡逻兵2', emoji: '💣', w: 26, h: 26, aiBehavior: 'patrol', patrolRange: 150, speed: 90, gravity: false, maxHealth: 999, health: 999 });
+  createObject('enemy', 200, 300, { name: '追踪者', emoji: '💀', w: 24, h: 24, aiBehavior: 'chase', speed: 40, gravity: false, maxHealth: 999, health: 999 });
+  createObject('healthPack', 700, 100, { name: '药水', healAmount: 30 });
+  createObject('text', 280, 10, { w: 240, h: 28, name: '标题', text: '🍎 水果忍者', fontSize: 20, fontColor: '#2ecc71' });
+}
+
 // ===== BUTTON EVENTS =====
 $('#btnPlay').addEventListener('click', startGame);
 $('#btnStop').addEventListener('click', stopGame);
@@ -2351,6 +2602,8 @@ document.addEventListener('keydown', e => {
   if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT') return;
 
   if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveProject(); }
+  if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
+  if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
   if (e.ctrlKey && e.key === 'd') { e.preventDefault(); duplicateSelected(); renderEditor(); }
   if (e.key === 'Escape') { state.selectedIds = []; renderEditor(); updatePropsPanel(); }
 });
@@ -2385,6 +2638,13 @@ function updateBreakoutBall(obj, dt) {
       const hitPos = (obj.x + obj.w/2 - other.x) / other.w;
       obj.vx = (hitPos - 0.5) * 500;
       obj.vy = -Math.abs(obj.vy);
+    }
+    // Normalize speed so ball never slows down
+    const currentSpeed = Math.sqrt(obj.vx * obj.vx + obj.vy * obj.vy);
+    if (currentSpeed > 0 && currentSpeed < 250) {
+      const scale = 280 / currentSpeed;
+      obj.vx *= scale;
+      obj.vy *= scale;
     }
     // Hit brick
     if (other.type === 'enemy') {
@@ -2459,8 +2719,28 @@ const resizeObserver = new ResizeObserver(() => {
 });
 resizeObserver.observe($('#canvasContainer'));
 
-// ===== CONTEXT MENU PREVENTION =====
-canvas.addEventListener('contextmenu', e => e.preventDefault());
+// ===== CONTEXT MENU =====
+const ctxMenu = $('#ctxMenu');
+canvas.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  if (state.playing || state.selectedIds.length === 0) return;
+  ctxMenu.style.left = e.clientX + 'px';
+  ctxMenu.style.top = e.clientY + 'px';
+  ctxMenu.classList.add('visible');
+});
+document.addEventListener('click', () => ctxMenu.classList.remove('visible'));
+ctxMenu.querySelectorAll('.ctx-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const action = item.dataset.action;
+    if (action === 'delete') { saveUndoState(); state.selectedIds.forEach(id => deleteObject(id)); renderEditor(); }
+    else if (action === 'copy') duplicateSelected();
+    else if (action === 'paste') { /* paste from copiedData */ if(state.copiedData) { saveUndoState(); state.copiedData.forEach(cd => { const obj = {...cd, id: uid(), x: cd.x + 20, y: cd.y + 20, events: JSON.parse(JSON.stringify(cd.events))}; delete obj._origX; delete obj._origY; state.objects.push(obj); state.selectedIds = [obj.id]; }); renderEditor(); updatePropsPanel(); updateObjectCount(); } }
+    else if (action === 'top') { state.selectedIds.forEach(id => { const obj = findObj(id); if (obj) { state.objects = state.objects.filter(o => o.id !== id); state.objects.push(obj); } }); renderEditor(); }
+    else if (action === 'bottom') { state.selectedIds.forEach(id => { const obj = findObj(id); if (obj) { state.objects = state.objects.filter(o => o.id !== id); state.objects.unshift(obj); } }); renderEditor(); }
+    else if (action === 'lock') { state.selectedIds.forEach(id => { const obj = findObj(id); if (obj) obj.locked = !obj.locked; }); renderEditor(); updatePropsPanel(); toast(state.selectedIds.length > 0 ? '锁定状态已切换' : '', 'info'); }
+    ctxMenu.classList.remove('visible');
+  });
+});
 </script>
 </body>
 </html>
