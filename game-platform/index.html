@@ -175,9 +175,98 @@ body{display:flex;flex-direction:column}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
 .playing .header{background:linear-gradient(90deg,var(--bg-secondary),rgba(46,204,113,0.15),var(--bg-secondary))}
 .playing .logo{-webkit-text-fill-color:var(--success)}
+
+/* ===== LOADING SCREEN ===== */
+@keyframes loadPulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.1);filter:brightness(1.3)}}
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes loadDot{0%,20%{opacity:0}50%{opacity:1}100%{opacity:0}}
+@keyframes floatOrb{0%{transform:translateY(0) scale(1);opacity:0.3}50%{transform:translateY(-40px) scale(1.2);opacity:0.7}100%{transform:translateY(0) scale(1);opacity:0.3}}
+@keyframes welcomeFadeIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes welcomeSlideLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes welcomeSlideRight{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes cardPop{from{opacity:0;transform:scale(0.8) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes glowPulse{0%,100%{box-shadow:0 4px 30px rgba(233,69,96,0.3)}50%{box-shadow:0 4px 50px rgba(233,69,96,0.6)}}
+@keyframes textGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(233,69,96,0.3))}50%{filter:drop-shadow(0 0 20px rgba(233,69,96,0.6))}}
+@keyframes orbFloat{0%{transform:translate(0,0)}25%{transform:translate(10px,-15px)}50%{transform:translate(-5px,-25px)}75%{transform:translate(-15px,-10px)}100%{transform:translate(0,0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes countUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== ENHANCED HEADER ===== */
+.header{background:rgba(22,33,62,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.06);box-shadow:0 2px 20px rgba(0,0,0,0.3)}
+.logo{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--accent),#ff8a5c,#f1c40f,var(--accent));background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px;white-space:nowrap;animation:gradientShift 4s ease infinite;textGlow:1}
+.hbtn{transition:all 0.25s cubic-bezier(0.4,0,0.2,1)}
+.hbtn-play{background:linear-gradient(135deg,#2ecc71,#27ae60);box-shadow:0 2px 10px rgba(46,204,113,0.3)}
+.hbtn-play:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(46,204,113,0.5)}
+.template-select{transition:all 0.3s ease}
+.template-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(233,69,96,0.15)}
+
+/* ===== AMBIENT PARTICLES ===== */
+.ambient-orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;animation:orbFloat linear infinite;filter:blur(1px)}
+.main{z-index:1}
+.header{z-index:100}
+
+/* ===== WELCOME MODAL v2 ===== */
+.welcome-v2{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.welcome-v2.visible{display:flex}
+.welcome-bg{position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 30% 20%,rgba(233,69,96,0.08) 0%,transparent 60%),radial-gradient(ellipse at 70% 80%,rgba(52,152,219,0.08) 0%,transparent 60%),linear-gradient(180deg,#0d0d1a 0%,#1a1a2e 50%,#16213e 100%);z-index:0}
+.welcome-bg::after{content:'';position:absolute;top:0;left:0;width:100%;height:100%;backdrop-filter:blur(0px);background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.welcome-particles{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1}
+.welcome-content{position:relative;z-index:2;text-align:center;max-width:800px;padding:20px}
+.welcome-logo{font-size:72px;margin-bottom:8px;animation:loadPulse 2s ease infinite}
+.welcome-title{font-size:42px;font-weight:900;background:linear-gradient(135deg,#e94560,#ff8a5c,#f1c40f,#ff6b81,#e94560);background-size:400% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradientShift 3s ease infinite;line-height:1.2;margin-bottom:6px;letter-spacing:-1px}
+.welcome-subtitle{font-size:16px;color:var(--text-secondary);margin-bottom:32px;opacity:0;animation:welcomeFadeIn 0.6s ease 0.3s forwards}
+.welcome-features{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;opacity:0;animation:welcomeFadeIn 0.6s ease 0.5s forwards}
+.welcome-feature{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 12px;text-align:center;transition:all 0.3s ease;cursor:default;backdrop-filter:blur(4px)}
+.welcome-feature:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.12);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.2)}
+.welcome-feature-icon{font-size:28px;margin-bottom:8px;display:block}
+.welcome-feature-title{font-size:12px;font-weight:700;margin-bottom:4px}
+.welcome-feature-desc{font-size:10px;color:var(--text-muted);line-height:1.4}
+.welcome-templates{margin-bottom:28px;opacity:0;animation:welcomeFadeIn 0.6s ease 0.7s forwards}
+.welcome-templates h3{font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px}
+.welcome-templates-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;max-height:160px;overflow-y:auto;padding-right:4px}
+.welcome-tpl-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 8px;cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);text-align:center}
+.welcome-tpl-card:hover{background:rgba(233,69,96,0.1);border-color:rgba(233,69,96,0.3);transform:translateY(-2px) scale(1.02);box-shadow:0 4px 16px rgba(233,69,96,0.15)}
+.welcome-tpl-card:active{transform:scale(0.97)}
+.welcome-tpl-emoji{font-size:22px;display:block;margin-bottom:4px}
+.welcome-tpl-name{font-size:10px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.welcome-stats{display:flex;gap:24px;justify-content:center;margin-bottom:28px;opacity:0;animation:welcomeFadeIn 0.6s ease 0.9s forwards}
+.welcome-stat{text-align:center}
+.welcome-stat-num{font-size:28px;font-weight:900;background:linear-gradient(135deg,var(--accent),#ff8a5c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.welcome-stat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}
+.welcome-start-btn{padding:16px 56px;background:linear-gradient(135deg,var(--accent),#ff6b81);color:#fff;border:none;border-radius:14px;font-size:17px;font-weight:700;cursor:pointer;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:0 4px 30px rgba(233,69,96,0.35);animation:glowPulse 2s ease infinite, welcomeFadeIn 0.6s ease 1.1s forwards;opacity:0;position:relative;overflow:hidden}
+.welcome-start-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);animation:shimmer 2.5s ease infinite}
+.welcome-start-btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 8px 40px rgba(233,69,96,0.5)}
+.welcome-start-btn:active{transform:scale(0.97)}
+.welcome-shortcuts{margin-top:20px;font-size:10px;color:var(--text-muted);opacity:0;animation:welcomeFadeIn 0.6s ease 1.3s forwards}
+.welcome-shortcuts kbd{background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:3px;border:1px solid rgba(255,255,255,0.1);font-family:inherit;font-size:10px}
+.welcome-close{position:absolute;top:20px;right:20px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:var(--text-muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;z-index:3}
+.welcome-close:hover{background:rgba(255,255,255,0.1);color:var(--text-primary);transform:rotate(90deg)}
+
+/* Loading screen */
+#loadingScreen{position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:linear-gradient(180deg,#0d0d1a 0%,#1a1a2e 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.8s ease,visibility 0.8s ease}
+#loadingScreen.fade-out{opacity:0;visibility:hidden}
+#loadingCanvas{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.loading-content{position:relative;z-index:1;text-align:center}
+.loading-emoji{font-size:56px;animation:loadPulse 1.5s ease infinite;display:block;margin-bottom:20px}
+.loading-title{font-size:32px;font-weight:900;background:linear-gradient(135deg,#e94560,#ff8a5c,#f1c40f);background-size:200% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradientShift 2s ease infinite;margin-bottom:20px}
+.loading-bar-track{width:220px;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;margin:0 auto}
+.loading-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#ff8a5c,#f1c40f);border-radius:2px;transition:width 0.3s ease}
+.loading-text{margin-top:14px;font-size:12px;color:var(--text-muted);min-height:18px}
+
 </style>
 </head>
 <body>
+<!-- LOADING SCREEN -->
+<div id="loadingScreen">
+  <canvas id="loadingCanvas" width="600" height="600"></canvas>
+  <div class="loading-content">
+    <span class="loading-emoji">🎮</span>
+    <div class="loading-title">GameForge Zero</div>
+    <div class="loading-bar-track"><div class="loading-bar-fill" id="loadingBar"></div></div>
+    <div class="loading-text" id="loadingText">正在初始化引擎...</div>
+  </div>
+</div>
+
 <!-- HEADER -->
 <div class="header">
   <div class="logo">GameForge<span> Zero</span></div>
@@ -286,39 +375,66 @@ body{display:flex;flex-direction:column}
   </div>
 </div>
 
-<!-- WELCOME MODAL -->
-<div class="welcome-overlay" id="welcomeModal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center">
-  <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:20px;padding:48px 56px;max-width:620px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
-    <div style="font-size:48px;margin-bottom:16px">🎮</div>
-    <h2 style="font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--accent),#ff8a5c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px">GameForge Zero</h2>
-    <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px">零代码游戏创作平台 — 无需编程，拖拽即可创建游戏</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;margin-bottom:28px">
-      <div style="background:var(--bg-tertiary);padding:14px;border-radius:10px;border:1px solid var(--border)">
-        <div style="font-size:13px;font-weight:600;color:var(--accent);margin-bottom:4px">🖱️ 拖拽创建</div>
-        <div style="font-size:11px;color:var(--text-muted)">从左侧面板拖拽对象到画布，或双击添加</div>
+<!-- WELCOME MODAL v2 -->
+<div class="welcome-v2" id="welcomeModal">
+  <div class="welcome-bg"></div>
+  <canvas class="welcome-particles" id="welcomeParticles" width="800" height="600"></canvas>
+  <button class="welcome-close" id="welcomeClose">✕</button>
+  <div class="welcome-content">
+    <span class="welcome-logo">🎮</span>
+    <div class="welcome-title">GameForge Zero</div>
+    <div class="welcome-subtitle">零代码游戏创作平台 — 拖拽、配置、发布，让创意即刻成真</div>
+    <div class="welcome-features">
+      <div class="welcome-feature">
+        <span class="welcome-feature-icon">🖱️</span>
+        <div class="welcome-feature-title" style="color:var(--accent)">拖拽创建</div>
+        <div class="welcome-feature-desc">从面板拖拽对象到画布<br>双击快速添加</div>
       </div>
-      <div style="background:var(--bg-tertiary);padding:14px;border-radius:10px;border:1px solid var(--border)">
-        <div style="font-size:13px;font-weight:600;color:var(--info)">⚡ 可视化事件</div>
-        <div style="font-size:11px;color:var(--text-muted)">右侧面板配置触发器与动作，无需写代码</div>
+      <div class="welcome-feature">
+        <span class="welcome-feature-icon">⚡</span>
+        <div class="welcome-feature-title" style="color:var(--info)">可视化事件</div>
+        <div class="welcome-feature-desc">5种触发器 × 14种动作<br>零代码配置逻辑</div>
       </div>
-      <div style="background:var(--bg-tertiary);padding:14px;border-radius:10px;border:1px solid var(--border)">
-        <div style="font-size:13px;font-weight:600;color:var(--success)">🎮 即时测试</div>
-        <div style="font-size:11px;color:var(--text-muted)">点击测试按钮立即运行你的游戏</div>
+      <div class="welcome-feature">
+        <span class="welcome-feature-icon">📷</span>
+        <div class="welcome-feature-title" style="color:var(--success)">镜头跟随</div>
+        <div class="welcome-feature-desc">大地图自动跟随<br>小地图实时显示</div>
       </div>
-      <div style="background:var(--bg-tertiary);padding:14px;border-radius:10px;border:1px solid var(--border)">
-        <div style="font-size:13px;font-weight:600;color:var(--warning)">📋 模板起步</div>
-        <div style="font-size:11px;color:var(--text-muted)">选择预设模板快速开始创作</div>
+      <div class="welcome-feature">
+        <span class="welcome-feature-icon">🚀</span>
+        <div class="welcome-feature-title" style="color:var(--warning)">即时发布</div>
+        <div class="welcome-feature-desc">一键分享链接<br>无需安装部署</div>
       </div>
     </div>
-    <div style="font-size:11px;color:var(--text-muted);margin-bottom:20px">
-      ⌨️ 快捷键: <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Ctrl+S</kbd> 保存 &nbsp;
-      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Ctrl+Z</kbd> 撤销 &nbsp;
-      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Ctrl+Y</kbd> 重做 &nbsp;
-      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Delete</kbd> 删除 &nbsp;
-      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Ctrl+D</kbd> 复制 &nbsp;
-      <kbd style="background:var(--bg-tertiary);padding:2px 6px;border-radius:3px;border:1px solid var(--border)">Esc</kbd> 取消
+    <div class="welcome-templates">
+      <h3>🎯 快速开始 — 选择模板</h3>
+      <div class="welcome-templates-grid" id="welcomeTemplateGrid">
+        <div class="welcome-tpl-card" data-tpl="platform"><span class="welcome-tpl-emoji">🎮</span><div class="welcome-tpl-name">平台跳跃</div></div>
+        <div class="welcome-tpl-card" data-tpl="shooter"><span class="welcome-tpl-emoji">🚀</span><div class="welcome-tpl-name">太空射击</div></div>
+        <div class="welcome-tpl-card" data-tpl="maze"><span class="welcome-tpl-emoji">🏰</span><div class="welcome-tpl-name">迷宫探索</div></div>
+        <div class="welcome-tpl-card" data-tpl="breakout"><span class="welcome-tpl-emoji">🧱</span><div class="welcome-tpl-name">打砖块</div></div>
+        <div class="welcome-tpl-card" data-tpl="adventure"><span class="welcome-tpl-emoji">🗺️</span><div class="welcome-tpl-name">横版冒险</div></div>
+        <div class="welcome-tpl-card" data-tpl="dungeon"><span class="welcome-tpl-emoji">🏰</span><div class="welcome-tpl-name">地下城</div></div>
+        <div class="welcome-tpl-card" data-tpl="space"><span class="welcome-tpl-emoji">🌌</span><div class="welcome-tpl-name">太空漫游</div></div>
+        <div class="welcome-tpl-card" data-tpl="survival"><span class="welcome-tpl-emoji">🧟</span><div class="welcome-tpl-name">生存模式</div></div>
+        <div class="welcome-tpl-card" data-tpl="underwater"><span class="welcome-tpl-emoji">🌊</span><div class="welcome-tpl-name">深海探索</div></div>
+        <div class="welcome-tpl-card" data-tpl="rpg"><span class="welcome-tpl-emoji">⚔️</span><div class="welcome-tpl-name">RPG冒险</div></div>
+        <div class="welcome-tpl-card" data-tpl="racing"><span class="welcome-tpl-emoji">🏎️</span><div class="welcome-tpl-name">赛车</div></div>
+        <div class="welcome-tpl-card" data-tpl="flappy"><span class="welcome-tpl-emoji">🐦</span><div class="welcome-tpl-name">飞鸟</div></div>
+        <div class="welcome-tpl-card" data-tpl="fortress"><span class="welcome-tpl-emoji">🏰</span><div class="welcome-tpl-name">堡垒防守</div></div>
+        <div class="welcome-tpl-card" data-tpl="target"><span class="welcome-tpl-emoji">🎯</span><div class="welcome-tpl-name">打靶场</div></div>
+      </div>
     </div>
-    <button id="welcomeStart" style="padding:14px 48px;background:linear-gradient(135deg,var(--accent),#ff6b81);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 20px rgba(233,69,96,0.4)">🚀 开始创作</button>
+    <div class="welcome-stats">
+      <div class="welcome-stat"><div class="welcome-stat-num">19</div><div class="welcome-stat-label">游戏模板</div></div>
+      <div class="welcome-stat"><div class="welcome-stat-num">15</div><div class="welcome-stat-label">对象类型</div></div>
+      <div class="welcome-stat"><div class="welcome-stat-num">70+</div><div class="welcome-stat-label">事件组合</div></div>
+      <div class="welcome-stat"><div class="welcome-stat-num">0</div><div class="welcome-stat-label">代码需求</div></div>
+    </div>
+    <button class="welcome-start-btn" id="welcomeStart">🚀 开始创作</button>
+    <div class="welcome-shortcuts">
+      ⌨️ <kbd>Ctrl+S</kbd> 保存 &nbsp; <kbd>Ctrl+Z</kbd> 撤销 &nbsp; <kbd>Ctrl+Y</kbd> 重做 &nbsp; <kbd>Del</kbd> 删除 &nbsp; <kbd>Ctrl+D</kbd> 复制 &nbsp; <kbd>F</kbd> 射击 &nbsp; <kbd>Shift</kbd> 冲刺
+    </div>
   </div>
 </div>
 
@@ -3543,8 +3659,194 @@ function updateBreakoutBall(obj, dt) {
   return true; // Handled
 }
 
+// ===== LOADING SCREEN & WELCOME ANIMATION =====
+function runLoadingSequence() {
+  const loadingBar = document.getElementById('loadingBar');
+  const loadingText = document.getElementById('loadingText');
+  const loadingScreen = document.getElementById('loadingScreen');
+  const messages = [
+    '正在初始化引擎...',
+    '加载19个游戏模板...',
+    '准备15种对象类型...',
+    '配置事件系统...',
+    '启动粒子引擎...',
+    '就绪!'
+  ];
+  let progress = 0;
+  const loadCanvas = document.getElementById('loadingCanvas');
+  const lCtx = loadCanvas.getContext('2d');
+  const loadParticles = [];
+
+  // Create loading particles
+  for (let i = 0; i < 60; i++) {
+    loadParticles.push({
+      x: Math.random() * 600,
+      y: Math.random() * 600,
+      r: Math.random() * 2 + 0.5,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      alpha: Math.random() * 0.5 + 0.2,
+      color: ['#e94560', '#ff8a5c', '#f1c40f', '#3498db', '#2ecc71'][Math.floor(Math.random() * 5)]
+    });
+  }
+
+  function animateLoading() {
+    if (progress >= 100) return;
+    lCtx.clearRect(0, 0, 600, 600);
+    loadParticles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = 600;
+      if (p.x > 600) p.x = 0;
+      if (p.y < 0) p.y = 600;
+      if (p.y > 600) p.y = 0;
+      lCtx.beginPath();
+      lCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      lCtx.fillStyle = p.color;
+      lCtx.globalAlpha = p.alpha;
+      lCtx.fill();
+    });
+    // Draw connecting lines
+    lCtx.globalAlpha = 0.05;
+    lCtx.strokeStyle = '#e94560';
+    lCtx.lineWidth = 0.5;
+    for (let i = 0; i < loadParticles.length; i++) {
+      for (let j = i + 1; j < loadParticles.length; j++) {
+        const dx = loadParticles[i].x - loadParticles[j].x;
+        const dy = loadParticles[i].y - loadParticles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 80) {
+          lCtx.beginPath();
+          lCtx.moveTo(loadParticles[i].x, loadParticles[i].y);
+          lCtx.lineTo(loadParticles[j].x, loadParticles[j].y);
+          lCtx.stroke();
+        }
+      }
+    }
+    lCtx.globalAlpha = 1;
+    requestAnimationFrame(animateLoading);
+  }
+  animateLoading();
+
+  // Simulate loading progress
+  const interval = setInterval(() => {
+    progress += Math.random() * 15 + 5;
+    if (progress > 100) progress = 100;
+    loadingBar.style.width = progress + '%';
+    const msgIdx = Math.min(Math.floor(progress / 20), messages.length - 1);
+    loadingText.textContent = messages[msgIdx];
+    if (progress >= 100) {
+      clearInterval(interval);
+      setTimeout(() => {
+        loadingScreen.classList.add('fade-out');
+        setTimeout(() => {
+          loadingScreen.style.display = 'none';
+          // Now initialize the app
+          initApp();
+        }, 800);
+      }, 300);
+    }
+  }, 250);
+}
+
+function initWelcomeParticles() {
+  const canvas = document.getElementById('welcomeParticles');
+  if (!canvas) return;
+  // Resize to window
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const particles = [];
+  const emojis = ['🎮', '🚀', '🏰', '⭐', '💎', '🎯', '⚡', '🔥', '🌊', '🗡️', '🏆', '🍎'];
+
+  for (let i = 0; i < 40; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 16 + 8,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: -Math.random() * 0.3 - 0.1,
+      alpha: Math.random() * 0.15 + 0.05,
+      emoji: emojis[Math.floor(Math.random() * emojis.length)],
+      rot: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.01
+    });
+  }
+
+  let animId;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.rotSpeed;
+      if (p.y < -30) { p.y = canvas.height + 30; p.x = Math.random() * canvas.width; }
+      if (p.x < -30) p.x = canvas.width + 30;
+      if (p.x > canvas.width + 30) p.x = -30;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.globalAlpha = p.alpha;
+      ctx.font = p.size + 'px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(p.emoji, 0, 0);
+      ctx.restore();
+    });
+    animId = requestAnimationFrame(animate);
+  }
+
+  // Start/stop animation with modal visibility
+  const modal = document.getElementById('welcomeModal');
+  const observer = new MutationObserver(() => {
+    if (modal.classList.contains('visible')) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      animate();
+    } else {
+      if (animId) cancelAnimationFrame(animId);
+    }
+  });
+  observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+}
+
+function initWelcomeModal() {
+  const modal = document.getElementById('welcomeModal');
+  const startBtn = document.getElementById('welcomeStart');
+  const closeBtn = document.getElementById('welcomeClose');
+  const templateGrid = document.getElementById('welcomeTemplateGrid');
+
+  function closeModal() {
+    modal.classList.remove('visible');
+    localStorage.setItem('gameforge_welcomed', '1');
+  }
+
+  startBtn.addEventListener('click', closeModal);
+  closeBtn.addEventListener('click', closeModal);
+
+  // Template quick-start cards
+  templateCards = templateGrid.querySelectorAll('.welcome-tpl-card');
+  templateCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const tplName = card.dataset.tpl;
+      loadTemplate(tplName);
+      document.getElementById('templateSelect').value = tplName;
+      renderEditor();
+      closeModal();
+      toast('已加载模板: ' + card.querySelector('.welcome-tpl-name').textContent, 'success');
+    });
+  });
+
+  initWelcomeParticles();
+
+  // Show modal on first visit
+  if (!localStorage.getItem('gameforge_welcomed')) {
+    modal.classList.add('visible');
+  }
+}
+
 // ===== INITIALIZE =====
-function init() {
+function initApp() {
   buildPalette();
   // Try loading from hash first
   if (!loadFromHash()) {
@@ -3559,21 +3861,25 @@ function init() {
     }
   }
   renderEditor();
+  initWelcomeModal();
 
-  // Show welcome on first visit
-  if (!localStorage.getItem('gameforge_welcomed')) {
-    const modal = $('#welcomeModal');
-    if (modal) {
-      modal.style.display = 'flex';
-      $('#welcomeStart').addEventListener('click', () => {
-        modal.style.display = 'none';
-        localStorage.setItem('gameforge_welcomed', '1');
-      });
-    }
+  // Add ambient floating orbs to the workspace
+  createAmbientOrbs();
+}
+
+function createAmbientOrbs() {
+  const colors = ['rgba(233,69,96,0.04)', 'rgba(52,152,219,0.04)', 'rgba(241,196,15,0.03)', 'rgba(46,204,113,0.03)'];
+  for (let i = 0; i < 5; i++) {
+    const orb = document.createElement('div');
+    orb.className = 'ambient-orb';
+    const size = Math.random() * 200 + 100;
+    orb.style.cssText = `width:${size}px;height:${size}px;background:${colors[i % colors.length]};left:${Math.random()*80}%;top:${Math.random()*80}%;animation-duration:${Math.random()*10+10}s;animation-delay:${Math.random()*-10}s`;
+    document.body.appendChild(orb);
   }
 }
 
-init();
+// Start loading sequence
+runLoadingSequence();
 
 // ===== CANVAS RESIZE OBSERVER =====
 const resizeObserver = new ResizeObserver(() => {
