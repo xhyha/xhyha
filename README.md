@@ -62,7 +62,21 @@
 - Node.js ≥ 18
 - npm ≥ 9
 
-### 安装与运行
+### 在线体验（推荐）
+
+无需安装，**直接在浏览器打开** 即可体验全部 25 款游戏 + AI 个性化实验室：
+
+```bash
+# 方式一：直接用浏览器打开 demo/index.html
+open demo/index.html        # macOS
+xdg-open demo/index.html    # Linux
+start demo/index.html       # Windows
+```
+
+> 💡 也可以用任意静态服务器：`npx serve demo` 或 `python -m http.server` 后访问 `http://localhost:8000`。
+> 每款游戏卡片都有 **「玩法」按钮**，点开即可查看详细的操作说明、计分规则与实战技巧。
+
+### 安装与运行（开发者）
 
 ```bash
 # 克隆项目
@@ -100,33 +114,50 @@ npx ts-node src/demo.ts
 
 ## 🎮 游戏模板列表
 
-| # | 模板名称 | 类型 | 分类标签 |
-|:--|:---|:---|:---|
-| 1 | Elimination（消消乐） | REACTION | 策略 · 益智 |
-| 2 | RhythmTap（节奏点击） | REACTION | 节奏 · 反应 |
-| 3 | MemoryFlip（记忆翻牌） | SENSES | 记忆 · 益智 |
-| 4 | Breathing（呼吸放松） | HEALING | 治愈 · 减压 |
-| 5 | Drawing（连点绘画） | CREATE | 创造 · 艺术 |
-| 6 | ColorMatch（颜色匹配） | REACTION | 反应 · 感知 |
-| 7 | QuickMath（速算挑战） | PUZZLE | 算术 · 益智 |
-| 8 | BubblePop（泡泡射击） | REACTION | 休闲 · 反应 |
-| 9 | WordScramble（单词拼图） | PUZZLE | 文字 · 益智 |
-| 10 | ChaseLight（追光挑战） | REACTION | 反应 · 注意力 |
-| 11 | Game2048（2048） | PUZZLE | 策略 · 数字 |
-| 12 | Snake（贪吃蛇） | REACTION | 经典 · 策略 |
-| 13 | Breakout（打砖块） | REACTION | 经典 · 反应 |
-| 14 | WhackAMole（打地鼠） | REACTION | 反应 · 休闲 |
-| 15 | CatchCoins（接金币） | REACTION | 休闲 · 反应 |
-| 16 | TicTacToe（井字棋） | PUZZLE | 策略 · 对弈 |
-| 17 | PianoTiles（钢琴块） | REACTION | 节奏 · 反应 |
-| 18 | Maze（迷宫探索） | PUZZLE | 策略 · 探索 |
-| 19 | Reflex（反应测试） | REACTION | 纯反应 · 竞速 |
-| 20 | SimonSays（西蒙说） | SENSES | 记忆 · 模仿 |
-| 21 | DotsAndBoxes（点格棋） | PUZZLE | 策略 · 对弈 |
-| 22 | TileSlide（滑块拼图） | PUZZLE | 益智 · 空间 |
-| 23 | ReactionDual（双线反应） | REACTION | 注意力 · 多任务 |
-| 24 | PatternMemory（图案记忆） | SENSES | 记忆 · 图案 |
-| 25 | BalloonPop（气球算术） | PUZZLE | 算术 · 休闲 |
+> 完整玩法说明、操作指引、计分规则、实战技巧详见 **[📜 游戏玩法手册](./docs/GAMES_GUIDE.md)**
+
+### 速查表（含核心机制 · 难度 · 时长）
+
+| # | 模板名称 | 类型 | 分类 | 难度 | 时长 | 核心玩法 |
+|:--|:---|:---|:---|:---|:---|:---|
+| 1 | [Elimination](./docs/GAMES_GUIDE.md#1-elimination-消消乐)（消消乐） | PUZZLE | 益智 · 三消 | ★★ | 30s | 交换相邻方块凑 3+ 同色消除，连锁加分 |
+| 2 | [RhythmTap](./docs/GAMES_GUIDE.md#2-rhythmtap-节奏点击)（节奏点击） | REACTION | 节奏 · 反应 | ★★ | 30s | 在脉动圆圈亮度峰值时点击，按精度计分 |
+| 3 | [MemoryFlip](./docs/GAMES_GUIDE.md#3-memoryflip-记忆翻牌)（记忆翻牌） | SENSES | 记忆 · 配对 | ★ | 30s | 翻开 16 张卡片找出 8 对相同图案 |
+| 4 | [Breathing](./docs/GAMES_GUIDE.md#4-breathing-呼吸放松)（呼吸放松） | HEALING | 治愈 · 减压 | ★ | 30s | 跟随圆圈缩放进行 4-4-4-2 呼吸法 |
+| 5 | [Drawing](./docs/GAMES_GUIDE.md#5-drawing-连点绘画)（连点绘画） | CREATE | 创造 · 艺术 | ★ | 30s | 按编号 1→10 顺序连接散点成画 |
+| 6 | [ColorMatch](./docs/GAMES_GUIDE.md#6-colormatch-颜色匹配)（颜色匹配） | REACTION | Stroop · 感知 | ★★ | 30s | 点选文字「颜色」而非「字义」的斯特鲁普测试 |
+| 7 | [QuickMath](./docs/GAMES_GUIDE.md#7-quickmath-速算挑战)（速算挑战） | PUZZLE | 算术 · 益智 | ★★ | 30s | 快速解答加减乘，连对递增加分 |
+| 8 | [BubblePop](./docs/GAMES_GUIDE.md#8-bubblepop-泡泡射击)（泡泡射击） | REACTION | 休闲 · 反应 | ★★ | 30s | 点击上升的泡泡，越小分越高 |
+| 9 | [WordScramble](./docs/GAMES_GUIDE.md#9-wordscramble-单词拼图)（单词拼图） | PUZZLE | 文字 · 益智 | ★★ | 30s | 按正确顺序点击打乱字母拼出单词 |
+| 10 | [ChaseLight](./docs/GAMES_GUIDE.md#10-chaselight-追光挑战)（追光挑战） | REACTION | 反应 · 注意力 | ★★★ | 30s | 限时内追点击亮格子，连击递增 |
+| 11 | [Game2048](./docs/GAMES_GUIDE.md#11-game2048)（2048） | PUZZLE | 策略 · 数字 | ★★★ | 30s | 滑动合并相同数字，目标合成 2048 |
+| 12 | [Snake](./docs/GAMES_GUIDE.md#12-snake-贪吃蛇)（贪吃蛇） | REACTION | 经典 · 策略 | ★★ | 30s | 控制蛇吃食变长，避开墙壁与自身 |
+| 13 | [Breakout](./docs/GAMES_GUIDE.md#13-breakout-打砖块)（打砖块） | REACTION | 经典 · 反应 | ★★ | 30s | 挡板反弹小球击碎所有砖块 |
+| 14 | [WhackAMole](./docs/GAMES_GUIDE.md#14-whackamole-打地鼠)（打地鼠） | REACTION | 反应 · 休闲 | ★ | 30s | 地鼠冒出时点击击中，空点扣分 |
+| 15 | [CatchCoins](./docs/GAMES_GUIDE.md#15-catchcoins-接金币)（接金币） | REACTION | 休闲 · 反应 | ★★ | 30s | 移动篮子接金币，避开炸弹 |
+| 16 | [TicTacToe](./docs/GAMES_GUIDE.md#16-tictactoe-井字棋)（井字棋） | PUZZLE | 策略 · 对弈 | ★★ | 不限 | 3×3 棋盘连成三子，与 AI 对弈 |
+| 17 | [PianoTiles](./docs/GAMES_GUIDE.md#17-pianotiles-钢琴块)（钢琴块） | REACTION | 节奏 · 反应 | ★★★ | 30s | 黑块下滚时点击，漏点 / 点错结束 |
+| 18 | [Maze](./docs/GAMES_GUIDE.md#18-maze-迷宫探索)（迷宫探索） | PUZZLE | 策略 · 探索 | ★★ | 30s | 在随机迷宫中找出口，步数越少分越高 |
+| 19 | [Reflex](./docs/GAMES_GUIDE.md#19-reflex-反应测试)（反应测试） | REACTION | 纯反应 · 竞速 | ★ | 5 轮 | 屏幕变绿瞬间点击，测反应毫秒数 |
+| 20 | [SimonSays](./docs/GAMES_GUIDE.md#20-simonsays-西蒙说)（西蒙说） | SENSES | 记忆 · 模仿 | ★★★ | 30s | 复现递增长序列，每轮 +1 步 |
+| 21 | [DotsAndBoxes](./docs/GAMES_GUIDE.md#21-dotsandboxes-点格棋)（点格棋） | PUZZLE | 策略 · 对弈 | ★★★ | 不限 | 轮流画线闭合方格，与 AI 对弈 |
+| 22 | [TileSlide](./docs/GAMES_GUIDE.md#22-tileslide-滑块拼图)（滑块拼图） | PUZZLE | 益智 · 空间 | ★★★ | 30s | 15 数字华容道，滑动还原 1-15 顺序 |
+| 23 | [ReactionDual](./docs/GAMES_GUIDE.md#23-reactiondual-双线反应)（双线反应） | REACTION | 注意力 · 多任务 | ★★★★ | 30s | 双任务并行：左侧等绿灯，右侧等数字匹配 |
+| 24 | [PatternMemory](./docs/GAMES_GUIDE.md#24-patternmemory-图案记忆)（图案记忆） | SENSES | 记忆 · 图案 | ★★★ | 30s | 复现网格中依次闪亮的图案，每轮 +1 格 |
+| 25 | [BalloonPop](./docs/GAMES_GUIDE.md#25-balloonpop-气球算术)（气球算术） | PUZZLE | 算术 · 休闲 | ★★ | 30s | 算出答案后点击携带正确数字的气球 |
+
+### 🎯 游戏分类导览
+
+| 分类 | 数量 | 代表游戏 | 适合场景 |
+|:---|:---|:---|:---|
+| 🧩 **益智策略** | 7 | Elimination、Game2048、TicTacToe、Maze | 深度思考、通勤 |
+| ⚡ **反应敏捷** | 10 | RhythmTap、Snake、Breakout、PianoTiles | 提升反应、碎片时间 |
+| 🧠 **记忆感知** | 4 | MemoryFlip、ColorMatch、SimonSays、PatternMemory | 大脑训练、认知提升 |
+| 🎨 **创造艺术** | 1 | Drawing | 放松、创意 |
+| 💆 **治愈放松** | 1 | Breathing | 减压、平复情绪 |
+| ➗ **算术挑战** | 2 | QuickMath、BalloonPop | 脑力训练 |
+
+> 💡 **动态难度**：Genesis 个性化引擎会根据玩家胜率、反应速度自动调节每款游戏的难度与速度。
 
 ---
 
@@ -258,6 +289,7 @@ genesis/
 
 | 文档 | 说明 |
 |:---|:---|
+| [📜 游戏玩法手册](./docs/GAMES_GUIDE.md) | 25 款游戏完整玩法 · 操作 · 计分 · 技巧 |
 | [方案升级设计](./docs/DESIGN_UPGRADE.md) | 架构升级方案与模块详细设计 |
 | [部署指南](./docs/DEPLOYMENT.md) | 鸿蒙元服务部署与发布流程 |
 

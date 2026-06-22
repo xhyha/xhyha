@@ -95,16 +95,78 @@ body::after{
 .ai-lab-banner-text h2{font-family:'Orbitron',monospace;font-size:18px;color:var(--neon-gold);margin-bottom:4px;letter-spacing:3px}
 .ai-lab-banner-text p{font-family:'Inter',sans-serif;font-size:12px;color:var(--text-secondary);line-height:1.5}
 .ai-lab-badge{margin-left:auto;padding:5px 14px;background:linear-gradient(135deg,var(--neon-red),#e0103a);color:#fff;font-family:'Orbitron',monospace;font-size:10px;border-radius:20px;letter-spacing:2px;font-weight:700;box-shadow:0 0 15px rgba(207,10,44,0.4);animation:ai-pulse 2s ease-in-out infinite}
-#game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;width:100%;max-width:900px;padding:0 10px}
-.game-card{background:rgba(26,26,46,0.6);backdrop-filter:blur(10px);border:1px solid rgba(0,245,255,0.15);border-radius:16px;padding:22px;cursor:pointer;transition:all .35s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;opacity:0;animation:fadeInUp 0.6s ease forwards;animation-delay:calc(var(--i) * 0.05s)}
+#game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;width:100%;max-width:900px;padding:0 10px}
+.game-card{background:rgba(26,26,46,0.6);backdrop-filter:blur(10px);border:1px solid rgba(0,245,255,0.15);border-radius:16px;padding:20px;cursor:pointer;transition:all .35s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden;opacity:0;animation:fadeInUp 0.6s ease forwards;animation-delay:calc(var(--i) * 0.05s)}
 .game-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--neon-cyan),transparent);opacity:0;transition:opacity .3s}
 .game-card:hover{transform:translateY(-8px) scale(1.02);border-color:rgba(0,245,255,0.5);box-shadow:0 0 30px rgba(0,245,255,0.2),0 10px 40px rgba(0,0,0,0.4)}
 .game-card:hover::before{opacity:1}
 .game-card:active{transform:scale(.97);transition-duration:.1s}
 .game-card .card-num{position:absolute;top:10px;right:14px;font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:rgba(0,245,255,0.06)}
-.game-card h2{font-family:'Orbitron',monospace;font-size:16px;color:var(--neon-gold);margin-bottom:8px;letter-spacing:1px}
+.game-card .card-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.game-card .card-icon{font-size:30px;line-height:1;filter:drop-shadow(0 0 8px rgba(0,245,255,0.3));min-width:42px;text-align:center}
+.game-card .card-head-text{flex:1;min-width:0}
+.game-card .card-cn{font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:var(--text);letter-spacing:1px;line-height:1.2}
+.game-card .card-en{font-family:'Orbitron',monospace;font-size:10px;color:var(--neon-cyan);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;opacity:.85}
 .game-card p{font-family:'Inter',sans-serif;font-size:12px;color:var(--text-secondary);line-height:1.5}
-.game-card .tag{display:inline-block;margin-top:12px;font-family:'Orbitron',monospace;font-size:9px;padding:4px 12px;border-radius:20px;background:rgba(0,245,255,0.1);color:var(--neon-cyan);letter-spacing:2px;text-transform:uppercase;border:1px solid rgba(0,245,255,0.2)}
+.game-card .card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.game-card .cm{font-family:'Orbitron',monospace;font-size:9px;padding:3px 9px;border-radius:12px;letter-spacing:1px;border:1px solid rgba(0,245,255,0.15)}
+.game-card .cm.cat{background:rgba(0,245,255,0.1);color:var(--neon-cyan)}
+.game-card .cm.diff{background:rgba(255,215,0,0.08);color:var(--neon-gold);border-color:rgba(255,215,0,0.2);letter-spacing:0}
+.game-card .cm.dur{background:rgba(176,38,255,0.08);color:var(--neon-purple);border-color:rgba(176,38,255,0.2)}
+.game-card .card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+.game-card .tag{font-family:'Orbitron',monospace;font-size:9px;padding:4px 12px;border-radius:20px;background:rgba(0,245,255,0.1);color:var(--neon-cyan);letter-spacing:2px;text-transform:uppercase;border:1px solid rgba(0,245,255,0.2)}
+.game-card .howto-btn{background:linear-gradient(135deg,rgba(0,245,255,0.15),rgba(176,38,255,0.15));border:1px solid rgba(0,245,255,0.3);color:var(--neon-cyan);padding:5px 16px;border-radius:20px;cursor:pointer;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:2px;transition:all .25s;backdrop-filter:blur(6px)}
+.game-card .howto-btn:hover{background:linear-gradient(135deg,var(--neon-cyan),var(--neon-purple));color:#fff;border-color:transparent;box-shadow:0 0 16px rgba(0,245,255,0.5);transform:scale(1.08)}
+/* Category filter bar */
+#cat-filter{display:flex;gap:8px;flex-wrap:wrap;width:100%;max-width:900px;padding:0 10px;margin-bottom:18px;justify-content:center}
+.cat-btn{background:rgba(26,26,46,0.5);backdrop-filter:blur(8px);border:1px solid rgba(0,245,255,0.15);color:var(--text-secondary);padding:7px 18px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;transition:all .3s}
+.cat-btn:hover{border-color:rgba(0,245,255,0.4);color:var(--text);transform:translateY(-2px)}
+.cat-btn.active{background:linear-gradient(135deg,rgba(0,245,255,0.2),rgba(176,38,255,0.15));border-color:var(--neon-cyan);color:var(--neon-cyan);box-shadow:0 0 14px rgba(0,245,255,0.25);text-shadow:0 0 8px rgba(0,245,255,0.5)}
+/* ===== HOW TO PLAY MODAL ===== */
+#howto-modal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;background:rgba(5,5,15,0.85);backdrop-filter:blur(12px);padding:16px;animation:fadeInUp .3s ease}
+#howto-modal.show{display:flex}
+.howto-box{background:linear-gradient(160deg,rgba(26,26,46,0.95),rgba(15,15,30,0.95));border:1px solid rgba(0,245,255,0.3);border-radius:18px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;padding:0;position:relative;box-shadow:0 0 60px rgba(0,245,255,0.2),0 20px 60px rgba(0,0,0,0.6);animation:fadeInUp .4s ease;scrollbar-width:thin;scrollbar-color:rgba(0,245,255,0.3) transparent}
+.howto-box::-webkit-scrollbar{width:5px}
+.howto-box::-webkit-scrollbar-thumb{background:rgba(0,245,255,0.3);border-radius:3px}
+.howto-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(0,245,255,0.2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s;z-index:2;line-height:1}
+.howto-close:hover{background:var(--neon-red);border-color:var(--neon-red);transform:rotate(90deg) scale(1.1)}
+.howto-hero{padding:24px 22px 16px;text-align:center;background:radial-gradient(ellipse at top,rgba(0,245,255,0.12),transparent 70%);border-bottom:1px solid rgba(0,245,255,0.1)}
+.howto-hero .hh-icon{font-size:48px;line-height:1;margin-bottom:8px;filter:drop-shadow(0 0 12px rgba(0,245,255,0.4))}
+.howto-hero .hh-cn{font-family:'Inter',sans-serif;font-size:24px;font-weight:800;color:var(--text);letter-spacing:1px}
+.howto-hero .hh-en{font-family:'Orbitron',monospace;font-size:11px;color:var(--neon-cyan);letter-spacing:3px;text-transform:uppercase;margin-top:4px}
+.howto-hero .hh-tags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.howto-hero .hh-tags span{font-family:'Orbitron',monospace;font-size:9px;padding:3px 10px;border-radius:12px;letter-spacing:1px}
+.howto-hero .hh-tags .t-cat{background:rgba(0,245,255,0.12);color:var(--neon-cyan);border:1px solid rgba(0,245,255,0.25)}
+.howto-hero .hh-tags .t-diff{background:rgba(255,215,0,0.1);color:var(--neon-gold);border:1px solid rgba(255,215,0,0.25)}
+.howto-hero .hh-tags .t-dur{background:rgba(176,38,255,0.1);color:var(--neon-purple);border:1px solid rgba(176,38,255,0.25)}
+.howto-body{padding:18px 22px 22px}
+.howto-section{margin-bottom:16px}
+.howto-section:last-child{margin-bottom:0}
+.howto-section h4{font-family:'Orbitron',monospace;font-size:12px;color:var(--neon-gold);letter-spacing:2px;margin-bottom:8px;display:flex;align-items:center;gap:6px;text-transform:uppercase}
+.howto-section h4 .hs-ico{font-size:14px}
+.howto-obj{font-family:'Inter',sans-serif;font-size:13px;color:var(--text);line-height:1.6;background:rgba(0,245,255,0.05);border-left:3px solid var(--neon-cyan);padding:10px 14px;border-radius:0 10px 10px 0}
+.howto-ctrl{font-family:'Inter',sans-serif;font-size:12.5px;color:var(--text);line-height:1.6;padding:10px 14px;background:rgba(255,255,255,0.03);border-radius:10px}
+.howto-rules{display:flex;flex-direction:column;gap:6px}
+.howto-rule{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(0,245,255,0.06)}
+.howto-rule .r-label{font-family:'Inter',sans-serif;font-size:12px;color:var(--text-secondary);flex:1}
+.howto-rule .r-score{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;white-space:nowrap}
+.howto-rule .r-score.pos{color:var(--neon-green);text-shadow:0 0 6px rgba(57,255,20,0.3)}
+.howto-rule .r-score.neg{color:var(--neon-red);text-shadow:0 0 6px rgba(207,10,44,0.3)}
+.howto-rule .r-score.neu{color:var(--neon-gold)}
+.howto-tips{list-style:none;display:flex;flex-direction:column;gap:6px}
+.howto-tips li{font-family:'Inter',sans-serif;font-size:12px;color:var(--text);line-height:1.5;padding:8px 12px 8px 30px;background:rgba(255,215,0,0.04);border-radius:8px;position:relative;border:1px solid rgba(255,215,0,0.08)}
+.howto-tips li::before{content:'💡';position:absolute;left:10px;top:7px;font-size:12px}
+.howto-play-btn{width:100%;margin-top:6px;background:linear-gradient(135deg,var(--neon-red),#e0103a);color:#fff;border:none;padding:14px;border-radius:12px;font-family:'Orbitron',monospace;font-size:14px;font-weight:700;letter-spacing:3px;cursor:pointer;transition:all .3s;box-shadow:0 0 20px rgba(207,10,44,0.4)}
+.howto-play-btn:hover{transform:scale(1.03);box-shadow:0 0 30px rgba(207,10,44,0.6)}
+/* ===== IN-GAME INTRO OVERLAY ===== */
+#intro-overlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,10,26,0.95);backdrop-filter:blur(15px);border-radius:12px;z-index:9;padding:20px;text-align:center;animation:fadeInUp .35s ease}
+#intro-overlay.show{display:flex}
+#intro-overlay .io-icon{font-size:54px;margin-bottom:10px;filter:drop-shadow(0 0 12px rgba(0,245,255,0.4))}
+#intro-overlay .io-title{font-family:'Orbitron',monospace;font-size:22px;color:var(--neon-gold);letter-spacing:2px;margin-bottom:6px;text-shadow:0 0 12px rgba(255,215,0,0.4)}
+#intro-overlay .io-obj{font-family:'Inter',sans-serif;font-size:13px;color:var(--text);line-height:1.5;max-width:340px;margin-bottom:16px}
+#intro-overlay .io-ctrl{font-family:'Inter',sans-serif;font-size:12px;color:var(--neon-cyan);line-height:1.5;max-width:320px;margin-bottom:20px;background:rgba(0,245,255,0.06);padding:10px 14px;border-radius:10px;border:1px solid rgba(0,245,255,0.15)}
+#intro-overlay .io-start-btn{background:linear-gradient(135deg,var(--neon-red),#e0103a);color:#fff;border:none;padding:14px 40px;border-radius:12px;font-family:'Orbitron',monospace;font-size:14px;font-weight:700;letter-spacing:3px;cursor:pointer;transition:all .3s;box-shadow:0 0 20px rgba(207,10,44,0.4)}
+#intro-overlay .io-start-btn:hover{transform:scale(1.06);box-shadow:0 0 30px rgba(207,10,44,0.6)}
 /* ===== GAME SCREEN ===== */
 #game-screen{width:100%;height:100%;display:none;flex-direction:column;align-items:center;position:relative;z-index:1}
 #game-hud{width:100%;max-width:500px;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;gap:10px;background:rgba(26,26,46,0.6);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,245,255,0.1)}
@@ -463,11 +525,24 @@ body>.scanline-effect{position:fixed;inset:0;z-index:9999;pointer-events:none;ba
   </div>
   <div id="canvas-wrap">
     <canvas id="c"></canvas>
+    <div id="intro-overlay">
+      <div class="io-icon" id="io-icon">🎮</div>
+      <div class="io-title" id="io-title">GAME</div>
+      <div class="io-obj" id="io-obj"></div>
+      <div class="io-ctrl" id="io-ctrl"></div>
+      <button class="io-start-btn" id="io-start-btn">开始游戏</button>
+    </div>
     <div id="overlay">
       <h2 id="ov-title"></h2>
       <p id="ov-msg"></p>
       <button id="ov-btn"></button>
     </div>
+  </div>
+</div>
+<div id="howto-modal">
+  <div class="howto-box">
+    <button class="howto-close" onclick="closeHowTo()">×</button>
+    <div id="howto-content"></div>
   </div>
 </div>
 <div id="ai-lab-screen">
@@ -556,35 +631,183 @@ const $ = id => document.getElementById(id);
 const BG = '#0a0a1a', BG2 = '#1a1a2e', ACCENT = '#CF0A2C', GOLD = '#FFD700', DIM = '#a0a0b0';
 
 const GAMES = [
-  {id:'elimination',name:'Elimination',desc:'Swap adjacent tiles to match 3 or more of the same color.',tag:'Match-3'},
-  {id:'rhythmtap',name:'RhythmTap',desc:'Tap circles when they pulse at peak brightness.',tag:'Rhythm'},
-  {id:'memoryflip',name:'MemoryFlip',desc:'Flip cards and find all matching pairs.',tag:'Memory'},
-  {id:'breathing',name:'Breathing',desc:'Follow the breathing circle: inhale, hold, exhale, rest.',tag:'Relax'},
-  {id:'drawing',name:'Drawing',desc:'Connect numbered dots in the correct order.',tag:'Puzzle'},
-  {id:'colormatch',name:'ColorMatch',desc:'Tap the button matching the DISPLAY color, not the word!',tag:'Stroop'},
-  {id:'quickmath',name:'QuickMath',desc:'Solve arithmetic problems as fast as you can.',tag:'Math'},
-  {id:'bubblepop',name:'BubblePop',desc:'Pop the rising bubbles before they escape!',tag:'Action'},
-  {id:'wordscramble',name:'WordScramble',desc:'Unscramble the letters to spell the hidden word.',tag:'Word'},
-  {id:'chaselight',name:'ChaseLight',desc:'Tap the lit cell before it moves to a new spot!',tag:'Reflex'},
-  {id:'game2048',name:'Game2048',desc:'Slide numbered tiles to merge matching values and reach 2048!',tag:'Puzzle'},
-  {id:'snake',name:'SnakeGame',desc:'Guide the snake to eat food and grow longer without hitting walls.',tag:'Arcade'},
-  {id:'breakout',name:'BreakoutGame',desc:'Bounce the ball to destroy all the colored bricks!',tag:'Arcade'},
-  {id:'whackamole',name:'WhackAMole',desc:'Tap the moles before they disappear. Avoid misses!',tag:'Reflex'},
-  {id:'catchcoins',name:'CatchCoins',desc:'Catch falling coins with your basket. Avoid the bombs!',tag:'Action'},
-  {id:'tictactoe',name:'TicTacToe',desc:'Classic 3x3 grid — get three in a row against the AI!',tag:'Strategy'},
-  {id:'pianotiles',name:'PianoTiles',desc:'Tap the black tiles as they scroll down. Don\'t miss!',tag:'Rhythm'},
-  {id:'maze',name:'MazeGame',desc:'Navigate through the maze to find the exit!',tag:'Puzzle'},
-  {id:'reflex',name:'ReflexGame',desc:'Test your reaction time — tap when the screen turns green!',tag:'Reflex'},
-  {id:'simonsays',name:'SimonSays',desc:'Remember and repeat the growing color sequence!',tag:'Memory'},
-  {id:'dotsandboxes',name:'DotsAndBoxes',desc:'Draw lines to complete boxes against the AI!',tag:'Strategy'},
-  {id:'tileslide',name:'TileSlide',desc:'Slide numbered tiles into order 1-15!',tag:'Puzzle'},
-  {id:'reactiondual',name:'ReactionDual',desc:'Dual task: react to colors AND numbers simultaneously!',tag:'Reflex'},
-  {id:'patternmemory',name:'PatternMemory',desc:'Memorize and recreate growing grid patterns!',tag:'Memory'},
-  {id:'balloonpop',name:'BalloonPop',desc:'Solve the equation and tap the balloon with the answer!',tag:'Math'},
+  {id:'elimination',icon:'🔮',name:'Elimination',cn:'消消乐',cat:'益智',dur:'30s',diff:2,desc:'Swap adjacent tiles to match 3 or more of the same color.',tag:'Match-3',
+    obj:'在 7×7 彩色方格中交换相邻方块，凑 3+ 同色消除，冲击高分',
+    ctrl:'点选方块 → 再点相邻方块交换；点击空白取消选择',
+    rules:[['消除方块','5 × 连击数'],['连锁反应','连击 +1，倍率叠加']],
+    tips:['优先制造 4 连 / 5 连，单次得分更高','关注连锁：消除后掉落的新连线可叠加倍率']},
+  {id:'rhythmtap',icon:'🎵',name:'RhythmTap',cn:'节奏点击',cat:'反应',dur:'30s',diff:2,desc:'Tap circles when they pulse at peak brightness.',tag:'Rhythm',
+    obj:'在脉动圆圈亮度达到峰值的瞬间点击，获得最高精度分',
+    ctrl:'点击屏幕上脉动的圆圈',
+    rules:[['完美（峰值）','≈ 100 分'],['偏早/偏晚','精度 × 100（递减）']],
+    tips:['圆圈从暗→亮→暗循环，正中间最亮时点击最佳','后期生成变快（最快 0.6s），提前预判位置']},
+  {id:'memoryflip',icon:'🃏',name:'MemoryFlip',cn:'记忆翻牌',cat:'记忆',dur:'30s',diff:1,desc:'Flip cards and find all matching pairs.',tag:'Memory',
+    obj:'4×4 共 16 张卡片含 8 对相同图案，翻开找出全部配对',
+    ctrl:'点击背面卡片翻开，每次最多翻 2 张自动比对',
+    rules:[['配对成功','+50'],['全部配对完成','+ 剩余时间 × 5']],
+    tips:['集中记忆每张牌的位置与图案','翻错别慌，记住错位为下次铺路','速度越快时间奖励越高']},
+  {id:'breathing',icon:'🫁',name:'Breathing',cn:'呼吸放松',cat:'治愈',dur:'30s',diff:1,desc:'Follow the breathing circle: inhale, hold, exhale, rest.',tag:'Relax',
+    obj:'跟随呼吸圆圈缩放进行 4-4-4-2 呼吸法，缓解压力',
+    ctrl:'呼吸周期内按住屏幕标记本次呼吸完成',
+    rules:[['完整一轮呼吸（已按压）','+25'],['未按压完成','0（仍有放松效果）']],
+    tips:['治愈型游戏，分数不是重点，专注呼吸节奏','吸气鼓腹，呼气缓慢吐气，适合焦虑失眠']},
+  {id:'drawing',icon:'✏️',name:'Drawing',cn:'连点绘画',cat:'创造',dur:'30s',diff:1,desc:'Connect numbered dots in the correct order.',tag:'Puzzle',
+    obj:'10 个编号圆点按 1→10 顺序连接，完成后形成几何画作',
+    ctrl:'按顺序点击下一个目标点（红色高亮放大）',
+    rules:[['连接 1 个点','+10'],['全部连接完成','+ 剩余时间 × 3']],
+    tips:['先扫视全图预判下一个点位置','目标点会脉动放大，容易识别']},
+  {id:'colormatch',icon:'🎨',name:'ColorMatch',cn:'颜色匹配',cat:'记忆',dur:'30s',diff:2,desc:'Tap the button matching the DISPLAY color, not the word!',tag:'Stroop',
+    obj:'Stroop 测试：点选文字「颜色」而非「字义」',
+    ctrl:'点击 4 个彩色按钮中与显示颜色一致的按钮',
+    rules:[['选对颜色','+15'],['选错颜色','-5']],
+    tips:['忽略字面意思，只看墨水颜色','训练大脑抑制控制能力']},
+  {id:'quickmath',icon:'➗',name:'QuickMath',cn:'速算挑战',cat:'算术',dur:'30s',diff:2,desc:'Solve arithmetic problems as fast as you can.',tag:'Math',
+    obj:'快速解答加减乘算术题，4 选 1，连对递增加分',
+    ctrl:'点击 4 个选项中的正确答案',
+    rules:[['答对（第 N 题）','+ (10 + 已答对数)'],['答错','-5']],
+    tips:['乘法题优先背九九表','错误答案通常与正确值接近（±5）']},
+  {id:'bubblepop',icon:'🫧',name:'BubblePop',cn:'泡泡射击',cat:'反应',dur:'30s',diff:2,desc:'Pop the rising bubbles before they escape!',tag:'Action',
+    obj:'点击上升的彩色泡泡，泡泡越小得分越高',
+    ctrl:'直接点击泡泡即可爆破',
+    rules:[['爆破泡泡','30 − 半径（越小越多）'],['逃出顶部','失去得分机会']],
+    tips:['优先点小泡泡（分数更高）','后期速度极快（最快 0.25s/个）']},
+  {id:'wordscramble',icon:'🔤',name:'WordScramble',cn:'单词拼图',cat:'益智',dur:'30s',diff:2,desc:'Unscramble the letters to spell the hidden word.',tag:'Word',
+    obj:'按正确顺序点击打乱字母拼出隐藏英文单词',
+    ctrl:'点击字母块到拼字区；点击拼字区字母可撤回',
+    rules:[['拼对单词','+ 词长 × 10 + 剩余时间 × 2'],['拼错','-5（字母退回）']],
+    tips:['利用首尾字母提示缩小范围','词库为常见英文单词']},
+  {id:'chaselight',icon:'💡',name:'ChaseLight',cn:'追光挑战',cat:'反应',dur:'30s',diff:3,desc:'Tap the lit cell before it moves to a new spot!',tag:'Reflex',
+    obj:'4×4 网格限时追点亮格子，倒计时归零前命中',
+    ctrl:'点击亮起的格子（带金色倒计时圆环）',
+    rules:[['命中（连击 N）','+10 + ⌊连击/3⌋ × 5'],['超时未中','-3']],
+    tips:['注意金色圆环，快消失时赶紧点','连续命中触发递增加分']},
+  {id:'game2048',icon:'🔢',name:'Game2048',cn:'2048',cat:'益智',dur:'30s',diff:3,desc:'Slide numbered tiles to merge matching values and reach 2048!',tag:'Puzzle',
+    obj:'滑动方块合并相同数字，目标合成 2048',
+    ctrl:'点左/右半屏中部→左右移；点上/下半屏→上下移',
+    rules:[['有效移动','+5'],['合并产生新数','累加内部分数']],
+    tips:['把大数固定在角落','保持大数所在行列单调递减']},
+  {id:'snake',icon:'🐍',name:'SnakeGame',cn:'贪吃蛇',cat:'反应',dur:'30s',diff:2,desc:'Guide the snake to eat food and grow longer without hitting walls.',tag:'Arcade',
+    obj:'控制蛇吃食物变长，避免撞墙或撞自身',
+    ctrl:'点击位置相对蛇头偏移更大方向即移动方向',
+    rules:[['吃到食物','+20'],['撞墙/撞身','游戏结束（点击重启）']],
+    tips:['蛇变长后留出回旋空间','速度越快越要提前规划路线']},
+  {id:'breakout',icon:'🏓',name:'BreakoutGame',cn:'打砖块',cat:'反应',dur:'30s',diff:2,desc:'Bounce the ball to destroy all the colored bricks!',tag:'Arcade',
+    obj:'控制挡板反弹小球击碎所有彩色砖块',
+    ctrl:'点击屏幕，挡板平滑移动到点击的 X 位置',
+    rules:[['击碎 1 块砖','+10'],['球落底部','游戏结束（点击重启）']],
+    tips:['用挡板边缘接球可改变角度','球速会随击碎数提升']},
+  {id:'whackamole',icon:'🔨',name:'WhackAMole',cn:'打地鼠',cat:'反应',dur:'30s',diff:1,desc:'Tap the moles before they disappear. Avoid misses!',tag:'Reflex',
+    obj:'3×3 共 9 个洞，地鼠随机冒出，缩回前点击击中',
+    ctrl:'直接点击冒出的地鼠',
+    rules:[['击中地鼠','+10'],['点空（没打中）','-5']],
+    tips:['不要乱点，空点会扣分','等地鼠完全冒出再精准点击']},
+  {id:'catchcoins',icon:'🪙',name:'CatchCoins',cn:'接金币',cat:'反应',dur:'30s',diff:2,desc:'Catch falling coins with your basket. Avoid the bombs!',tag:'Action',
+    obj:'移动篮子接金币加分，金袋高分，炸弹扣分',
+    ctrl:'点击屏幕，篮子平滑移动到点击的 X 位置',
+    rules:[['普通金币','+10'],['金袋（$）','+25'],['炸弹','-20']],
+    tips:['优先接金袋（高分），必要时放弃金币','坚决避开炸弹，扣分严重']},
+  {id:'tictactoe',icon:'⭕',name:'TicTacToe',cn:'井字棋',cat:'益智',dur:'不限',diff:2,desc:'Classic 3x3 grid — get three in a row against the AI!',tag:'Strategy',
+    obj:'3×3 井字棋与 AI 对弈，连成三子一线即胜',
+    ctrl:'玩家执 X，点击空格落子；AI 执 O 自动落子',
+    rules:[['胜负','三子连线者胜'],['AI 策略','必胜则胜/必败则堵/占中心/随机']],
+    tips:['占据中心优势最大','同时威胁两条线形成双杀']},
+  {id:'pianotiles',icon:'🎹',name:'PianoTiles',cn:'钢琴块',cat:'反应',dur:'30s',diff:3,desc:'Tap the black tiles as they scroll down. Don\'t miss!',tag:'Rhythm',
+    obj:'别踩白块：黑块下滚时点击，漏点或点错即结束',
+    ctrl:'点击黑色方块所在列',
+    rules:[['击中黑块','+10'],['漏点/点错','-20（结束，点击重启）']],
+    tips:['用多指同时点击不同列','每击中一块速度 +5（最快 300px/s）']},
+  {id:'maze',icon:'🌀',name:'MazeGame',cn:'迷宫探索',cat:'益智',dur:'30s',diff:2,desc:'Navigate through the maze to find the exit!',tag:'Puzzle',
+    obj:'随机 8×8 迷宫，从左上角走到右下角出口',
+    ctrl:'点左/右边缘→左右移；点上/下半屏中部→上下移',
+    rules:[['到达出口','max(0, 200 − 步数 × 3)']],
+    tips:['迷宫保证唯一解，走右手定则一定能出','步数越少得分越高']},
+  {id:'reflex',icon:'⚡',name:'ReflexGame',cn:'反应测试',cat:'反应',dur:'5 轮',diff:1,desc:'Test your reaction time — tap when the screen turns green!',tag:'Reflex',
+    obj:'纯反应测速：屏幕变绿瞬间点击，测反应毫秒数',
+    ctrl:'红色 WAIT 时不要点；绿色 TAP 时立刻点击',
+    rules:[['反应得分','max(0, 500 − 反应ms ÷ 2)'],['抢跑','-10']],
+    tips:['正常人反应约 200-300ms','集中注意力在颜色变化上']},
+  {id:'simonsays',icon:'🎤',name:'SimonSays',cn:'西蒙说',cat:'记忆',dur:'30s',diff:3,desc:'Remember and repeat the growing color sequence!',tag:'Memory',
+    obj:'复现递增长序列，4 色块每轮 +1 步',
+    ctrl:'观察阶段看序列；输入阶段按相同顺序点击色块',
+    rules:[['完整复现一轮','+20，序列 +1'],['点错','-30，序列清空重来']],
+    tips:['用口诀/联想记忆颜色顺序','长序列分段记忆（每 3-4 个一组）']},
+  {id:'dotsandboxes',icon:'⬜',name:'DotsAndBoxes',cn:'点格棋',cat:'益智',dur:'不限',diff:3,desc:'Draw lines to complete boxes against the AI!',tag:'Strategy',
+    obj:'4×4 点阵轮流画线，画第 4 条边闭合方格者得分',
+    ctrl:'点击两点之间的线段位置画线（水平或垂直）',
+    rules:[['闭合一个方格','+15，并获额外一次画线'],['胜负','闭合方格多者胜']],
+    tips:['避免给对手留下第 3 条边的方格','可主动牺牲一格换取连锁']},
+  {id:'tileslide',icon:'🧩',name:'TileSlide',cn:'滑块拼图',cat:'益智',dur:'30s',diff:3,desc:'Slide numbered tiles into order 1-15!',tag:'Puzzle',
+    obj:'15 数字华容道：滑动相邻方块按 1-15 顺序排列',
+    ctrl:'点击与空格相邻的方块，该方块滑入空格',
+    rules:[['每移动一步','-1（步数越少越好）'],['完成还原','显示所用步数']],
+    tips:['先还原顶部一行，再还原左侧一列','正确归位的方块显示为绿色']},
+  {id:'reactiondual',icon:'🔀',name:'ReactionDual',cn:'双线反应',cat:'反应',dur:'30s',diff:4,desc:'Dual task: react to colors AND numbers simultaneously!',tag:'Reflex',
+    obj:'双任务并行：左侧等绿灯，右侧等数字匹配目标值',
+    ctrl:'左半屏圆圈变绿才点；右半屏数字=目标值才点',
+    rules:[['左侧正确（绿灯）','+10'],['右侧正确（数字匹配）','+10'],['误点','-5']],
+    tips:['最考验注意力分配，需同时监控两边','绿灯窗口短，优先响应左侧']},
+  {id:'patternmemory',icon:'🔳',name:'PatternMemory',cn:'图案记忆',cat:'记忆',dur:'30s',diff:3,desc:'Memorize and recreate growing grid patterns!',tag:'Memory',
+    obj:'4×4 网格依次闪亮若干格子，按相同顺序复现图案',
+    ctrl:'观察阶段看闪亮顺序；输入阶段按顺序点击格子',
+    rules:[['完整复现一轮','+ 当前轮数 × 15'],['点错','-10，本轮重来']],
+    tips:['用坐标记忆法（如行1列2）','图案从 3 格起每轮 +1，最长 12 格']},
+  {id:'balloonpop',icon:'🎈',name:'BalloonPop',cn:'气球算术',cat:'算术',dur:'30s',diff:2,desc:'Solve the equation and tap the balloon with the answer!',tag:'Math',
+    obj:'算出题目答案，点击携带正确数字的上升气球',
+    ctrl:'计算答案 → 点击携带正确数字的气球',
+    rules:[['点中正确答案','+15'],['点中错误答案','-10']],
+    tips:['先心算答案再找气球，避免误点','约 30% 气球带正确答案，其余为干扰']},
 ];
 
 const grid=$('game-grid');
-GAMES.forEach((g,i)=>{const card=document.createElement('div');card.className='game-card';card.style.setProperty('--i',i);card.innerHTML='<div class="card-num">'+String(i+1).padStart(2,'0')+'</div><h2>'+g.name+'</h2><p>'+g.desc+'</p><div class="tag">'+g.tag+'</div>';card.onclick=()=>launchGame(i);grid.appendChild(card);});
+const CATS=['全部','益智','反应','记忆','创造','治愈','算术'];
+const DIFF_STARS=['','★','★★','★★★','★★★★'];
+const DIFF_LABELS=['','入门','进阶','挑战','极限'];
+function renderCards(filter){
+  grid.innerHTML='';
+  GAMES.forEach((g,i)=>{
+    if(filter&&filter!=='全部'&&g.cat!==filter)return;
+    const card=document.createElement('div');
+    card.className='game-card';
+    card.style.setProperty('--i',i);
+    card.innerHTML=
+      '<div class="card-num">'+String(i+1).padStart(2,'0')+'</div>'+
+      '<div class="card-head">'+
+        '<div class="card-icon">'+(g.icon||'🎮')+'</div>'+
+        '<div class="card-head-text">'+
+          '<div class="card-cn">'+g.cn+'</div>'+
+          '<div class="card-en">'+g.name+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<p>'+g.desc+'</p>'+
+      '<div class="card-meta">'+
+        '<span class="cm cat">'+g.cat+'</span>'+
+        '<span class="cm diff" title="'+DIFF_LABELS[g.diff]+'难度">'+DIFF_STARS[g.diff]+'</span>'+
+        '<span class="cm dur">⏱ '+g.dur+'</span>'+
+      '</div>'+
+      '<div class="card-footer">'+
+        '<div class="tag">'+g.tag+'</div>'+
+        '<button class="howto-btn" title="查看玩法说明">玩法</button>'+
+      '</div>';
+    card.onclick=()=>launchGame(i);
+    const howtoBtn=card.querySelector('.howto-btn');
+    howtoBtn.onclick=(e)=>{e.stopPropagation();openHowTo(i);};
+    grid.appendChild(card);
+  });
+}
+/* Category filter bar */
+(function(){
+  const bar=document.createElement('div');
+  bar.id='cat-filter';
+  CATS.forEach((c,idx)=>{
+    const b=document.createElement('button');
+    b.className='cat-btn'+(idx===0?' active':'');
+    b.textContent=c;
+    b.onclick=()=>{document.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderCards(c);};
+    bar.appendChild(b);
+  });
+  grid.parentNode.insertBefore(bar,grid);
+})();
+renderCards('全部');
 
 const canvas=$('c'),ctx=canvas.getContext('2d');
 let W,H,currentGame=null,animId=null,score=0,timeLeft=30,timerInterval=null;
@@ -592,14 +815,68 @@ let W,H,currentGame=null,animId=null,score=0,timeLeft=30,timerInterval=null;
 function resize(){const wrap=$('canvas-wrap');const maxW=Math.min(wrap.clientWidth-20,480);const maxH=wrap.clientHeight-20;const ratio=window.devicePixelRatio||1;W=maxW;H=Math.min(maxH,maxW*1.3);canvas.style.width=W+'px';canvas.style.height=H+'px';canvas.width=W*ratio;canvas.height=H*ratio;ctx.setTransform(ratio,0,0,ratio,0,0);}
 window.addEventListener('resize',()=>{if(currentGame)resize();});
 
-function launchGame(idx){$('menu-screen').style.display='none';$('ai-lab-screen').style.display='none';$('game-screen').style.display='flex';$('game-title').textContent=GAMES[idx].name.toUpperCase();score=0;timeLeft=30;updateHUD();resize();hideOverlay();currentGame=idx;startGame(idx);startTimer();}
+function launchGame(idx,skipIntro){
+  $('menu-screen').style.display='none';
+  $('ai-lab-screen').style.display='none';
+  $('game-screen').style.display='flex';
+  const g=GAMES[idx];
+  $('game-title').textContent=(g.cn||g.name)+' · '+g.name.toUpperCase();
+  score=0;timeLeft=30;updateHUD();resize();hideOverlay();
+  currentGame=idx;
+  if(!skipIntro){showIntro(idx);}
+  else{startGame(idx);startTimer();}
+}
+/* How-to-play modal */
+function scoreClass(s){if(!s)return'neu';const n=parseInt(s);if(isNaN(n)){if(/max|≤|-/i.test(s))return'neu';return'neu';}return n>=0?'pos':'neg';}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function openHowTo(idx){
+  const g=GAMES[idx];
+  const rulesHtml=(g.rules||[]).map(r=>{
+    const label=Array.isArray(r)?r[0]:r;
+    const score=Array.isArray(r)?r[1]:'';
+    return '<div class="howto-rule"><span class="r-label">'+esc(label)+'</span>'+(score?'<span class="r-score '+scoreClass(String(score))+'">'+esc(score)+'</span>':'')+'</div>';
+  }).join('');
+  const tipsHtml=(g.tips||[]).map(t=>'<li>'+esc(t)+'</li>').join('');
+  $('howto-content').innerHTML=
+    '<div class="howto-hero">'+
+      '<div class="hh-icon">'+(g.icon||'🎮')+'</div>'+
+      '<div class="hh-cn">'+g.cn+'</div>'+
+      '<div class="hh-en">'+g.name+'</div>'+
+      '<div class="hh-tags">'+
+        '<span class="t-cat">'+g.cat+'</span>'+
+        '<span class="t-diff">'+DIFF_LABELS[g.diff]+' '+DIFF_STARS[g.diff]+'</span>'+
+        '<span class="t-dur">⏱ '+g.dur+'</span>'+
+      '</div>'+
+    '</div>'+
+    '<div class="howto-body">'+
+      '<div class="howto-section"><h4><span class="hs-ico">🎯</span>游戏目标</h4><div class="howto-obj">'+esc(g.obj)+'</div></div>'+
+      '<div class="howto-section"><h4><span class="hs-ico">🕹️</span>操作方式</h4><div class="howto-ctrl">'+esc(g.ctrl)+'</div></div>'+
+      (rulesHtml?'<div class="howto-section"><h4><span class="hs-ico">📊</span>计分规则</h4><div class="howto-rules">'+rulesHtml+'</div></div>':'')+
+      (tipsHtml?'<div class="howto-section"><h4><span class="hs-ico">💡</span>实战技巧</h4><ul class="howto-tips">'+tipsHtml+'</ul></div>':'')+
+      '<button class="howto-play-btn" onclick="closeHowTo();launchGame('+idx+')">立即开始</button>'+
+    '</div>';
+  $('howto-modal').classList.add('show');
+}
+function closeHowTo(){$('howto-modal').classList.remove('show');}
+/* In-game intro overlay */
+function showIntro(idx){
+  const g=GAMES[idx];
+  $('io-icon').textContent=g.icon||'🎮';
+  $('io-title').textContent=g.cn+' · '+g.name;
+  $('io-obj').textContent='🎯 '+g.obj;
+  $('io-ctrl').textContent='🕹️ '+g.ctrl;
+  const intro=$('intro-overlay');
+  intro.classList.add('show');
+  $('io-start-btn').onclick=()=>{intro.classList.remove('show');startGame(idx);startTimer();};
+}
+$('howto-modal').addEventListener('click',(e)=>{if(e.target===$('howto-modal'))closeHowTo();});
 function updateHUD(){$('hud-score').textContent=score;$('hud-timer').textContent=timeLeft;}
 function startTimer(){clearInterval(timerInterval);timerInterval=setInterval(()=>{timeLeft--;updateHUD();if(timeLeft<=0){clearInterval(timerInterval);endGame();}},1000);}
 function addScore(n){score+=n;updateHUD();}
 function showOverlay(title,msg,btnText,cb){$('ov-title').textContent=title;$('ov-msg').textContent=msg;$('ov-btn').textContent=btnText;$('overlay').style.display='flex';$('ov-btn').onclick=cb;}
 function hideOverlay(){$('overlay').style.display='none';}
-function endGame(){cancelAnimationFrame(animId);clearInterval(timerInterval);currentGame&&GAMES[currentGame].cleanup&&GAMES[currentGame].cleanup();showOverlay('Game Over','Final Score: '+score,'Play Again',()=>{hideOverlay();launchGame(currentGame);});}
-$('back-btn').onclick=()=>{cancelAnimationFrame(animId);clearInterval(timerInterval);currentGame&&GAMES[currentGame].cleanup&&GAMES[currentGame].cleanup();currentGame=null;$('game-screen').style.display='none';$('menu-screen').style.display='flex';};
+function endGame(){cancelAnimationFrame(animId);clearInterval(timerInterval);currentGame&&GAMES[currentGame].cleanup&&GAMES[currentGame].cleanup();showOverlay('Game Over','Final Score: '+score,'Play Again',()=>{hideOverlay();launchGame(currentGame,true);});}
+$('back-btn').onclick=()=>{cancelAnimationFrame(animId);clearInterval(timerInterval);currentGame&&GAMES[currentGame].cleanup&&GAMES[currentGame].cleanup();currentGame=null;$('intro-overlay').classList.remove('show');$('game-screen').style.display='none';$('menu-screen').style.display='flex';};
 function getPos(e){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
 function onTap(fn){const handler=e=>{e.preventDefault();fn(getPos(e));};canvas.addEventListener('pointerdown',handler);return()=>canvas.removeEventListener('pointerdown',handler);}
 function clearCanvas(){ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);}
